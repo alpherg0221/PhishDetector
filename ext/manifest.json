@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "PhishDetector",
+  "short_name": "PhishDetector",
+  "description": "Phish Detector for Chrome Extension",
+  "version": "1.0.0",
+  "permissions": [
+    "tabs"
+  ],
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "js": [
+        "src/detector.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "icons": {
+    "16": "icon/icon16.png",
+    "48": "icon/icon48.png",
+    "128": "icon/icon128.png"
+  }
+}
