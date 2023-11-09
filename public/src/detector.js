@@ -38,7 +38,7 @@ const main = async () => {
 
     if (await _checkExtLink()) {
         await _showDetectionPage("ExtLink", (performance.now() / 1000 - startTime).toFixed(digits));
-        console.log(`PhishDetector:ExtLin:${ (performance.now() / 1000 - startTime).toFixed(digits) }`);
+        console.log(`PhishDetector:ExtLink:${ (performance.now() / 1000 - startTime).toFixed(digits) }`);
         return;
     }
 
