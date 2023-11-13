@@ -38,7 +38,7 @@ const main = async () => {
 
     if (await _checkExtLink()) {
         await _showDetectionPage("ExtLink", (performance.now() / 1000 - startTime).toFixed(digits));
-        console.log(`PhishDetector:ExtLin:${ (performance.now() / 1000 - startTime).toFixed(digits) }`);
+        console.log(`PhishDetector:ExtLink:${ (performance.now() / 1000 - startTime).toFixed(digits) }`);
         return;
     }
 
@@ -91,7 +91,7 @@ const _checkGoogleAnalytics = async () => {
     const GAFileName = "https://www.google-analytics.com/analytics.js";
     const GTMFileName = "https://www.googletagmanager.com/gtag/js";
 
-    const srcText = document.toString();
+    const srcText = document.documentElement.outerHTML;
 
     return (srcText.includes(GAFileName)) || (srcText.includes(GTMFileName));
 }
@@ -106,7 +106,7 @@ const _checkCopy = async () => {
     const HtmlAttr = "data-scrapbook-source";
     const HtmlComments = "saved from url";
 
-    return (document.documentElement.hasAttribute(HtmlAttr)) || (document.toString().includes(HtmlComments));
+    return (document.documentElement.hasAttribute(HtmlAttr)) || (document.documentElement.outerHTML.includes(HtmlComments));
 }
 
 
