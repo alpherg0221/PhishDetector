@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# python venv directories
+venv
+test/tmp
+test/result.csv
