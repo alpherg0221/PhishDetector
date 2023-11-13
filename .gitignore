@@ -26,3 +26,4 @@ dist-ssr
 # python venv directories
 venv
 test/tmp
+test/result.csv
