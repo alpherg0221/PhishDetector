@@ -86,6 +86,7 @@ def show_result():
     print(f"平均検出時間 : {round(df['検出時間(sec)'].mean(), 3)}")
     print("========================================")
     print(f"{blue}検出理由{end}")
+    print(f"NoPasswordForm : {len(df[df['検出理由'] == 'NoPasswordForm'])}")
     print(f"Unknown : {len(df[df['検出理由'] == 'Unknown'])}")
     print(f"Copy : {len(df[df['検出理由'] == 'Copy'])}")
     print(f"GA : {len(df[df['検出理由'] == 'GA'])}")

@@ -161,24 +161,34 @@ const _checkExtLink = async () => {
         if (link === "" || link.startsWith("#")) continue;
 
         if (link.startsWith("http") || link.startsWith("//")) {
-            const linkHostname = (new URL(link)).hostname;
+            let linkHostname = (new URL(link)).hostname;
 
             // linkのドメインでcookieを設定
             // eTLD+1が違うと設定されない
-            document.cookie = `test_key=test_value; domain=${ linkHostname }`;
+            while (true) {
+                document.cookie = `pd_test_key=pd_test_value; domain=${linkHostname};`;
+                if (linkHostname.indexOf(".") === -1) break;
+                linkHostname = linkHostname.substring(linkHostname.indexOf(".") + 1);
+            }
 
             // cookieが設定されていればeTLD+1が同じ
-            if (document.cookie.includes("test_key=test_value")) {
+            if (document.cookie.includes("pd_test_key=pd_test_value")) {
                 internal++;
+                console.log(`internal : ${link}`);
             } else {
                 external++;
+                console.log(`external : ${link}`);
             }
 
             // cookieを消す
-            document.cookie = `test_key=test_value; max-age=0`;
+            linkHostname = (new URL(link)).hostname;
+            while (true) {
+                document.cookie = `pd_test_key=pd_test_value; domain=${linkHostname}; max-age=0;`;
+                if (linkHostname.indexOf(".") === -1) break;
+                linkHostname = linkHostname.substring(linkHostname.indexOf(".") + 1);
+            }
         } else {
             internal++;
-            console.log(link)
         }
     }
 
