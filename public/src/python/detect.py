@@ -15,7 +15,7 @@ def main():
     # 推測
     test = model.predict(pd.DataFrame([[ga, copy, script, extLink]], columns=["GA", "Copy", "Script", "ExtLink"]))
 
-    print(test[0])
+    print(f"PhishDetector:{test[0]}")
 
 
 if __name__ == '__main__':
