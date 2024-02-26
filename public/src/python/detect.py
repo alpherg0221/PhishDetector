@@ -15,7 +15,7 @@ def main():
     # 推測
     test = model.predict(pd.DataFrame([[ga, copy, script, extLink]], columns=["GA", "Copy", "Script", "ExtLink"]))
 
-    print(test[0])
+    print(test[0])  # フィッシング:0, 正規:1
 
 
 if __name__ == '__main__':
