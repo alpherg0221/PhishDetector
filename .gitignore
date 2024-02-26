@@ -27,3 +27,4 @@ dist-ssr
 venv
 test/tmp
 test/result.csv
+public/src/pyodide/

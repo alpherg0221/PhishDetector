@@ -3,7 +3,7 @@
   "name": "PhishDetector",
   "short_name": "PhishDetector",
   "description": "Phish Detector for Chrome Extension",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "permissions": [
     "tabs"
   ],
@@ -14,7 +14,18 @@
   "content_scripts": [
     {
       "js": [
+        "src/pyodide/pyodide.js",
         "src/detector.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/python/train.py"
       ],
       "matches": [
         "<all_urls>"

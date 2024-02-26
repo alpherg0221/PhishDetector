@@ -14,7 +14,18 @@
   "content_scripts": [
     {
       "js": [
+        "src/pyodide/pyodide.js",
         "src/detector.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/python/train.py"
       ],
       "matches": [
         "<all_urls>"
