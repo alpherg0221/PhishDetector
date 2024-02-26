@@ -9,10 +9,7 @@ const main = async () => {
     await sleep(2000);
 
     // ページ内にpasswordの入力フォームがなければ処理終了
-    if (!(await _isExistPasswordForm())) {
-        console.log(`PhishDetector:NoPasswordForm:${ (performance.now() / 1000 - startTime).toFixed(digits) }`);
-        return;
-    }
+    if (!(await _isExistPasswordForm())) return;
 
     await chrome.runtime.sendMessage({
         type: "detect",
