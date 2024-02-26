@@ -1,17 +1,13 @@
-# import joblib
-import os
-
 import joblib
 import pandas as pd
-# import pickle
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 
 
 def main():
     # PhishとTargetの、特徴量と正解ラベルのデータ
-    data_phish = pd.read_csv("./feature_phish.csv")
-    data_target = pd.read_csv("./feature_target.csv")
+    data_phish = pd.read_csv("feature_phish.csv")
+    data_target = pd.read_csv("feature_target.csv")
 
     # 訓練データ
     train_phish = data_phish.sample(frac=0.7)
@@ -45,7 +41,7 @@ def main():
 
     print(f"正解率: {score * 100}%")
 
-    joblib.dump(model, "./model.pkl", compress=3)
+    joblib.dump(model, "../public/src/python/model.pkl", compress=3)
 
 
 if __name__ == '__main__':
