@@ -9,19 +9,17 @@ const main = async () => {
     await sleep(2000);
 
     // ページ内にpasswordの入力フォームがなければ処理終了
-    // if (!(await _isExistPasswordForm())) {
-    //     console.log(`PhishDetector:NoPasswordForm:${ (performance.now() / 1000 - startTime).toFixed(digits) }`);
-    //     return;
-    // }
-
-    // background.jsに特徴量を渡す
-    const pycode = await (await fetch(`chrome-extension://${ chrome.runtime.id }/src/python/train.py`)).text()
-    const pyodide = await loadPyodide({
-        indexURL: `chrome-extension://${ chrome.runtime.id }/src/pyodide/`
-    });
+    if (!(await _isExistPasswordForm())) {
+        console.log(`PhishDetector:NoPasswordForm:${ (performance.now() / 1000 - startTime).toFixed(digits) }`);
+        return;
+    }
 
     await chrome.runtime.sendMessage({
         type: "detect",
+        ga: await _checkGoogleAnalytics(),
+        copy: await _checkCopy(),
+        script: await _checkScriptTagCount(),
+        extLink: await _checkExtLink(),
     });
 }
 
@@ -164,4 +162,4 @@ const _checkExtLink = async () => {
     return (external * 100 / (external + internal));
 }
 
-main().catch(e => console.error(e));
+main().catch(e => console.log(e));

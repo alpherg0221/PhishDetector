@@ -8,13 +8,11 @@
     "tabs"
   ],
   "background": {
-    "service_worker": "src/background.js",
-    "type": "module"
+    "service_worker": "src/background.js"
   },
   "content_scripts": [
     {
       "js": [
-        "src/pyodide/pyodide.js",
         "src/detector.js"
       ],
       "matches": [
@@ -22,6 +20,9 @@
       ]
     }
   ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+  },
   "web_accessible_resources": [
     {
       "resources": [
