@@ -1,5 +1,7 @@
 # Phishing Detector for Chrome Extension
 
+[<u>README in English</u>](./README-en.md)
+
 ## インストール方法
 
 1. 本リポジトリの [Releases](https://github.com/alpherg0221/PhishDetector/releases) から`ext.zip`をダウンロードして展開
