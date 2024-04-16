@@ -3,13 +3,16 @@
   "name": "PhishDetector",
   "short_name": "PhishDetector",
   "description": "Phish Detector for Chrome Extension",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "permissions": [
     "tabs"
   ],
   "background": {
     "service_worker": "src/background.js",
     "type": "module"
+  },
+  "action": {
+    "default_popup": ""
   },
   "content_scripts": [
     {
