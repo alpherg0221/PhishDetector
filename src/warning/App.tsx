@@ -4,6 +4,10 @@ import "./App.css"
 const App = () => {
   const isEnglish = window.navigator.language === "en";
 
+  const reportFP = async () => {
+    await fetch("https://www.az.lab.uec.ac.jp/~ywatanabe/PhishingDetector/api/info.php");
+  }
+
   const closePage = () => chrome.runtime.sendMessage({ type: "close" });
 
   return (
@@ -26,14 +30,19 @@ const App = () => {
             <b>{ (new URL(location.href)).searchParams.get("url") }</b>
             { isEnglish ? " might steal your personally identifiable information." : " は機密情報を盗み取る疑いがあります" }
           </Text>
-          {/*<Text style={ { color: "#e9e9e9", fontSize: "1.25em" } }>*/}
-          {/*  検出理由：<b>{ (new URL(location.href)).searchParams.get("by") }</b>*/}
-          {/*</Text>*/}
-          {/*<Text style={ { color: "#e9e9e9", fontSize: "1.25em" } }>*/}
-          {/*  検出時間：<b>{ (new URL(location.href)).searchParams.get("time") }</b> ms*/}
-          {/*</Text>*/}
-          <Stack horizontalAlign="center" style={ { paddingTop: 20 } }>
-            <DefaultButton onClick={ closePage }>{ isEnglish ? "Close this page" : "ページを閉じる" }</DefaultButton>
+          {/*<Text style={ { color: "#e9e9e9", fontSize: "1.25em" } }>*/ }
+          {/*  検出理由：<b>{ (new URL(location.href)).searchParams.get("by") }</b>*/ }
+          {/*</Text>*/ }
+          {/*<Text style={ { color: "#e9e9e9", fontSize: "1.25em" } }>*/ }
+          {/*  検出時間：<b>{ (new URL(location.href)).searchParams.get("time") }</b> ms*/ }
+          {/*</Text>*/ }
+          <Stack horizontal horizontalAlign="center" style={ { paddingTop: 20 } } tokens={ { childrenGap: 20 } }>
+            <DefaultButton onClick={ reportFP }>
+              { isEnglish ? "Report a false positive" : "誤検出を報告" }
+            </DefaultButton>
+            <DefaultButton onClick={ closePage }>
+              { isEnglish ? "Close this page" : "ページを閉じる" }
+            </DefaultButton>
           </Stack>
         </Stack>
       </ThemeProvider>

@@ -5,14 +5,15 @@
   "description": "Phish Detector for Chrome Extension",
   "version": "1.0.1",
   "permissions": [
-    "tabs"
+    "tabs",
+    "storage"
   ],
   "background": {
     "service_worker": "src/background.js",
     "type": "module"
   },
   "action": {
-    "default_popup": ""
+    "default_popup": "src/popup/index.html"
   },
   "content_scripts": [
     {

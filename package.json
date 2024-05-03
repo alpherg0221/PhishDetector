@@ -14,7 +14,8 @@
     "@types/chrome": "^0.0.250",
     "@types/node": "^20.9.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",
