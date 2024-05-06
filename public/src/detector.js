@@ -3,46 +3,58 @@ const sleep = (second) => new Promise(resolve => setTimeout(resolve, second));
 const main = async () => {
     // Shadow DOM対策
     Element.prototype._attachShadow = Element.prototype.attachShadow;
-    Element.prototype.attachShadow = () => this._attachShadow({ mode: "open" });
+    Element.prototype.attachShadow = () => this._attachShadow({mode: "open"});
 
     // 時間を表示する桁数
     const digits = 3
     // 時間計測開始
     const startTime = performance.now() / 1000;
+    // 検出されたか判定するフラグ
+    let flag = false;
+    // 各指標の値
+    let ga;
+    let copy;
+    let script;
+    let extLink;
 
     // JSによるコンテンツ生成まで2秒待機
     await sleep(2000);
 
     // ページ内にpasswordの入力フォームがなければ処理終了
     if (!(await _isExistPasswordForm())) {
-        console.log(`PhishDetector:NoPasswordForm:${ (performance.now() / 1000 - startTime).toFixed(digits) }`);
+        console.log(`PhishDetector:NoPasswordForm:${(performance.now() / 1000 - startTime).toFixed(digits)}`);
         return;
     }
 
-    if (await _checkGoogleAnalytics()) {
-        console.log(`PhishDetector:GA:${ (performance.now() / 1000 - startTime).toFixed(digits) }`);
-        return;
+    ga = await _checkGoogleAnalytics();
+    if (ga) {
+        console.log(`PhishDetector:GA:${(performance.now() / 1000 - startTime).toFixed(digits)}`);
     }
 
-    if (await _checkCopy()) {
-        await _showDetectionPage("Copy", (performance.now() / 1000 - startTime).toFixed(digits));
-        console.log(`PhishDetector:Copy:${ (performance.now() / 1000 - startTime).toFixed(digits) }`);
-        return;
+    copy = await _checkCopy();
+    if (copy) {
+        flag = true;
+        console.log(`PhishDetector:Copy:${(performance.now() / 1000 - startTime).toFixed(digits)}`);
     }
 
-    if (await _checkScriptTagCount()) {
-        await _showDetectionPage("Script", (performance.now() / 1000 - startTime).toFixed(digits));
-        console.log(`PhishDetector:Script:${ (performance.now() / 1000 - startTime).toFixed(digits) }`);
-        return;
+    script = await _checkScriptTagCount();
+    if (script <= 11) {
+        flag = true;
+        console.log(`PhishDetector:Script:${(performance.now() / 1000 - startTime).toFixed(digits)}`);
     }
 
-    if (await _checkExtLink()) {
-        await _showDetectionPage("ExtLink", (performance.now() / 1000 - startTime).toFixed(digits));
-        console.log(`PhishDetector:ExtLink:${ (performance.now() / 1000 - startTime).toFixed(digits) }`);
-        return;
+    extLink = await _checkExtLink();
+    if (extLink >= 64) {
+        flag = true;
+        console.log(`PhishDetector:ExtLink:${(performance.now() / 1000 - startTime).toFixed(digits)}`);
     }
 
-    console.log(`PhishDetector:Unknown:${ (performance.now() / 1000 - startTime).toFixed(digits) }`);
+    // 検出済みflagが立っていたら警告ページを表示
+    if (flag) {
+        await _showDetectionPage(ga, copy, script, extLink, (performance.now() / 1000 - startTime).toFixed(digits));
+    }
+
+    // console.log(`PhishDetector:Unknown:${(performance.now() / 1000 - startTime).toFixed(digits)}`);
 }
 
 
@@ -70,15 +82,43 @@ const _isExistPasswordForm = async () => {
 
 /**
  *
- * @param {("Copy"|"Script"|"ExtLink")} detectBy
+ * @param {boolean} ga
+ * @param {boolean} copy
+ * @param {number} script
+ * @param {number} extLink
  * @param {string} time
  * @returns {Promise<void>}
  * @private
  */
-const _showDetectionPage = async (detectBy, time) => {
-    await chrome.runtime.sendMessage({
-        type: "show", url: location.hostname, by: detectBy, time: time,
-    });
+const _showDetectionPage = async (ga, copy, script, extLink, time) => {
+    // await chrome.runtime.sendMessage({
+    //     type: "show",
+    //     url: location.hostname,
+    //     ga: ga,
+    //     copied: copy,
+    //     script: script,
+    //     extLink: extLink,
+    //     time: time,
+    // });    // await chrome.runtime.sendMessage({
+    //     type: "show",
+    //     url: location.hostname,
+    //     ga: ga,
+    //     copied: copy,
+    //     script: script,
+    //     extLink: extLink,
+    //     time: time,
+    // });    // await chrome.runtime.sendMessage({
+    //     type: "show",
+    //     url: location.hostname,
+    //     ga: ga,
+    //     copied: copy,
+    //     script: script,
+    //     extLink: extLink,
+    //     time: time,
+    // });
+    location.assign(
+        `chrome-extension://${chrome.runtime.id}/src/warning/index.html?url=${location.hostname}&ga=${ga}&copy=${copy}&script=${script}&extLink=${extLink}&time=${time}`
+    )
 }
 
 
@@ -112,7 +152,7 @@ const _checkCopy = async () => {
 
 /**
  *
- * @returns {Promise<boolean>} scriptタグの数が11個以下ならTrue
+ * @returns {Promise<number>} scriptタグの数が11個以下ならTrue
  * @private
  */
 const _checkScriptTagCount = async () => {
@@ -128,13 +168,13 @@ const _checkScriptTagCount = async () => {
         }
     }
 
-    return (cnt <= 11);
+    return cnt;
 }
 
 
 /**
  *
- * @returns {Promise<boolean>} 外部リンクの割合が64%以上ならTrue
+ * @returns {Promise<number>} 外部リンクの割合が64%以上ならTrue
  * @private
  */
 const _checkExtLink = async () => {
@@ -192,7 +232,7 @@ const _checkExtLink = async () => {
         }
     }
 
-    return ((external * 100 / (external + internal)) >= 64);
+    return (external * 100 / (external + internal));
 }
 
 main().catch(e => console.error(e));
