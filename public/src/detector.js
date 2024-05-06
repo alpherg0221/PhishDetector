@@ -195,12 +195,15 @@ const _checkExtLink = async () => {
 
     // aタグを外部リンクと内部リンクに分類
     for (const aTag of aTags) {
-        const link = aTag.getAttribute("href");
+        let link = aTag.getAttribute("href");
 
         // ハッシュが指定されていたら無視
         if (link === "" || link.startsWith("#")) continue;
 
         if (link.startsWith("http") || link.startsWith("//")) {
+            // //から始まるURLにhttpやhttpsを追加
+            if (link.startsWith("//")) link = `${location.protocol}${link}`;
+
             let linkHostname = (new URL(link)).hostname;
 
             // linkのドメインでcookieを設定

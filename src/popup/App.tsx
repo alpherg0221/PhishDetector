@@ -8,10 +8,12 @@ const App = () => {
 
   // 検出漏れの報告
   const reportFN = async () => {
-    const formData = new FormData();
     const data = Object.fromEntries(new URLSearchParams(location.search)); // TODO:データの取得
+
+    const formData = new FormData();
     formData.append("type", "FP");
     Object.keys(data).forEach(key => formData.append(key, data[key]));
+
     await fetch("https://www.az.lab.uec.ac.jp/~ywatanabe/PhishingDetector/api/info.php", {
       mode: "cors",
       method: "POST",
