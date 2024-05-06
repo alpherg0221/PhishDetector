@@ -1,6 +1,20 @@
+chrome.runtime.onMessage.addListener((msg, _, sendResponse) => {
+    switch (msg.type) {
+        case "detection":
+            main(true).then(res => sendResponse(res));
+            return true;
+    }
+});
+
+
 const sleep = (second) => new Promise(resolve => setTimeout(resolve, second));
 
-const main = async () => {
+
+/**
+ * @returns {Promise<{resFlag: string, url: string, ga: boolean, copy: boolean, script: number, extLink: number, time: string}>}
+ * @param noSleep {boolean}
+ */
+const main = async (noSleep) => {
     // Shadow DOM対策
     Element.prototype._attachShadow = Element.prototype.attachShadow;
     Element.prototype.attachShadow = () => this._attachShadow({mode: "open"});
@@ -10,51 +24,70 @@ const main = async () => {
     // 時間計測開始
     const startTime = performance.now() / 1000;
     // 検出されたか判定するフラグ
-    let flag = false;
+    /**
+     * @type {"NoPasswordForm"|"Safe"|"Phish"|"Unknown"}
+     */
+    let resFlag = "Unknown";
     // 各指標の値
+    /**
+     * @type {boolean}
+     */
     let ga;
-    let copy;
+    /**
+     * @type {boolean}
+     */
+    let copied;
+    /**
+     * @type {number}
+     */
     let script;
+    /**
+     * @type {number}
+     */
     let extLink;
 
     // JSによるコンテンツ生成まで2秒待機
-    await sleep(2000);
+    if (!noSleep) await sleep(2000);
 
     // ページ内にpasswordの入力フォームがなければ処理終了
     if (!(await _isExistPasswordForm())) {
         console.log(`PhishDetector:NoPasswordForm:${(performance.now() / 1000 - startTime).toFixed(digits)}`);
-        return;
+        resFlag = "NoPasswordForm";
     }
 
     ga = await _checkGoogleAnalytics();
     if (ga) {
+        if (resFlag !== "NoPasswordForm") resFlag = "Safe";
         console.log(`PhishDetector:GA:${(performance.now() / 1000 - startTime).toFixed(digits)}`);
     }
 
-    copy = await _checkCopy();
-    if (copy) {
-        flag = true;
+    copied = await _checkCopied();
+    if (copied) {
+        if (resFlag !== "NoPasswordForm") resFlag = "Phish";
         console.log(`PhishDetector:Copy:${(performance.now() / 1000 - startTime).toFixed(digits)}`);
     }
 
     script = await _checkScriptTagCount();
     if (script <= 11) {
-        flag = true;
+        if (resFlag !== "NoPasswordForm") resFlag = "Phish";
         console.log(`PhishDetector:Script:${(performance.now() / 1000 - startTime).toFixed(digits)}`);
     }
 
     extLink = await _checkExtLink();
     if (extLink >= 64) {
-        flag = true;
+        if (resFlag !== "NoPasswordForm") resFlag = "Phish";
         console.log(`PhishDetector:ExtLink:${(performance.now() / 1000 - startTime).toFixed(digits)}`);
     }
 
-    // 検出済みflagが立っていたら警告ページを表示
-    if (flag) {
-        await _showDetectionPage(ga, copy, script, extLink, (performance.now() / 1000 - startTime).toFixed(digits));
+    return {
+        resFlag: resFlag,
+        url: location.hostname,
+        ga: ga,
+        copy: copied,
+        script: script,
+        extLink: extLink,
+        time: (performance.now() / 1000 - startTime + 2).toFixed(digits),
     }
-
-    // console.log(`PhishDetector:Unknown:${(performance.now() / 1000 - startTime).toFixed(digits)}`);
 }
 
 
@@ -81,44 +114,17 @@ const _isExistPasswordForm = async () => {
 
 
 /**
- *
+ * @param {string} resFlag
  * @param {boolean} ga
- * @param {boolean} copy
+ * @param {boolean} copied
  * @param {number} script
  * @param {number} extLink
  * @param {string} time
  * @returns {Promise<void>}
  * @private
  */
-const _showDetectionPage = async (ga, copy, script, extLink, time) => {
-    // await chrome.runtime.sendMessage({
-    //     type: "show",
-    //     url: location.hostname,
-    //     ga: ga,
-    //     copied: copy,
-    //     script: script,
-    //     extLink: extLink,
-    //     time: time,
-    // });    // await chrome.runtime.sendMessage({
-    //     type: "show",
-    //     url: location.hostname,
-    //     ga: ga,
-    //     copied: copy,
-    //     script: script,
-    //     extLink: extLink,
-    //     time: time,
-    // });    // await chrome.runtime.sendMessage({
-    //     type: "show",
-    //     url: location.hostname,
-    //     ga: ga,
-    //     copied: copy,
-    //     script: script,
-    //     extLink: extLink,
-    //     time: time,
-    // });
-    location.assign(
-        `chrome-extension://${chrome.runtime.id}/src/warning/index.html?url=${location.hostname}&ga=${ga}&copy=${copy}&script=${script}&extLink=${extLink}&time=${time}`
-    )
+const _showDetectionPage = async (resFlag, ga, copied, script, extLink, time) => {
+    location.assign(`chrome-extension://${chrome.runtime.id}/src/warning/index.html?url=${location.hostname}&resFlag=${resFlag}&ga=${ga}&copy=${copied}&script=${script}&extLink=${extLink}&time=${time}`)
 }
 
 
@@ -142,7 +148,7 @@ const _checkGoogleAnalytics = async () => {
  * @returns {Promise<boolean>} コピーの痕跡があればTrue
  * @private
  */
-const _checkCopy = async () => {
+const _checkCopied = async () => {
     const HtmlAttr = "data-scrapbook-source";
     const HtmlComments = "saved from url";
 
@@ -238,4 +244,9 @@ const _checkExtLink = async () => {
     return (external * 100 / (external + internal));
 }
 
-main().catch(e => console.error(e));
+main(false).then(async (res) => {
+    // 検出済みflagが立っていたら警告ページを表示
+    if (res.resFlag === "Phish") {
+        await _showDetectionPage(res.ga, res.copied, res.script, res.extLink, res.time);
+    }
+}).catch(e => console.error(e));

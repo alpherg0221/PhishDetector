@@ -18,10 +18,12 @@ const App = () => {
 
   // 誤検出の報告
   const reportFP = async () => {
-    const formData = new FormData();
     const data = Object.fromEntries(new URLSearchParams(location.search));
+
+    const formData = new FormData();
     formData.append("type", "FP");
     Object.keys(data).forEach(key => formData.append(key, data[key]));
+
     await fetch("https://www.az.lab.uec.ac.jp/~ywatanabe/PhishingDetector/api/info.php", {
       mode: "cors",
       method: "POST",
@@ -44,10 +46,12 @@ const App = () => {
   useEffect(() => {
     getSendInfo().then(async (res) => {
       if (res) {
-        const formData = new FormData();
         const data = Object.fromEntries(new URLSearchParams(location.search));
+
+        const formData = new FormData();
         formData.append("type", "Detect");
         Object.keys(data).forEach(key => formData.append(key, data[key]));
+
         await fetch("https://www.az.lab.uec.ac.jp/~ywatanabe/PhishingDetector/api/info.php", {
           mode: "cors",
           method: "POST",

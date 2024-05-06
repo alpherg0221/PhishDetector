@@ -5,14 +5,14 @@ import { useEffect, useState } from "react";
 const App = () => {
   const isEnglish = window.navigator.language === "en";
   const [sendInfo, updateSendInfo] = useState(false);
+  const [detected, setDetected] = useState("");
+  const [detectRes, setDetectRes] = useState<{ [p: string]: string }>({});
 
   // 検出漏れの報告
   const reportFN = async () => {
-    const data = Object.fromEntries(new URLSearchParams(location.search)); // TODO:データの取得
-
     const formData = new FormData();
-    formData.append("type", "FP");
-    Object.keys(data).forEach(key => formData.append(key, data[key]));
+    formData.append("type", "FN");
+    Object.keys(detectRes).forEach(key => formData.append(key, detectRes[key]));
 
     await fetch("https://www.az.lab.uec.ac.jp/~ywatanabe/PhishingDetector/api/info.php", {
       mode: "cors",
@@ -23,6 +23,10 @@ const App = () => {
 
   useEffect(() => {
     getSendInfo().then(v => updateSendInfo(v));
+    chrome.runtime.sendMessage({ type: "detection" }).then(res => {
+      setDetected(res.resFlag);
+      setDetectRes(res);
+    });
   }, []);
 
   return (
@@ -36,6 +40,12 @@ const App = () => {
           <Stack horizontal horizontalAlign="center" verticalAlign="center" tokens={ { childrenGap: 20 } }>
             <img src="/icon/icon48.svg" alt="BrandIcon" width={ 36 } height={ 36 }/>
             <Text style={ { fontSize: "2em" } }>PhishDetector</Text>
+          </Stack>
+
+          <Stack horizontal horizontalAlign="center">
+            <Text style={ { fontSize: "1.5em" } }>
+              { `${ isEnglish ? "Phishing Status" : "判定結果" } : ${ detected }` }
+            </Text>
           </Stack>
 
           <PrimaryButton onClick={ reportFN }>
@@ -53,7 +63,9 @@ const App = () => {
                     fontSize: "1em",
                     fontWeight: "bolder",
                     paddingLeft: 26
-                  } }>検出時の情報を開発者に送信する</Text>
+                  } }>
+                    { isEnglish ? "検出時の情報を開発者に送信する" : "検出時の情報を開発者に送信する" }
+                  </Text>
                 </Stack>
               }
               inlineLabel
