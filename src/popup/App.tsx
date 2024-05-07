@@ -1,4 +1,4 @@
-import { FontIcon, PrimaryButton, Stack, Text, ThemeProvider, Toggle } from "@fluentui/react";
+import { DefaultButton, FontIcon, PrimaryButton, Stack, Text, ThemeProvider, Toggle } from "@fluentui/react";
 import { getSendInfo, setSendInfo } from "../utils/utils.ts";
 import { useEffect, useState } from "react";
 
@@ -77,6 +77,10 @@ const App = () => {
               } }
             />
           </Stack>
+
+          <DefaultButton iconProps={ { iconName: "OpenInNewTab" } }>Block list</DefaultButton>
+
+          <DefaultButton iconProps={ { iconName: "OpenInNewTab" } }>Allow list</DefaultButton>
         </Stack>
       </ThemeProvider>
     </>
