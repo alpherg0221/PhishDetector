@@ -11,7 +11,7 @@ const sleep = (second) => new Promise(resolve => setTimeout(resolve, second));
 
 
 /**
- * @returns {Promise<{resFlag: string, url: string, ga: boolean, copy: boolean, script: number, extLink: number, time: string}>}
+ * @returns {Promise<{resFlag: string, url: string, ga: boolean, copied: boolean, script: number, extLink: number, time: string}>}
  * @param noSleep {boolean}
  */
 const main = async (noSleep) => {
@@ -83,7 +83,7 @@ const main = async (noSleep) => {
         resFlag: resFlag,
         url: location.hostname,
         ga: ga,
-        copy: copied,
+        copied: copied,
         script: script,
         extLink: extLink,
         time: (performance.now() / 1000 - startTime + 2).toFixed(digits),
@@ -124,7 +124,7 @@ const _isExistPasswordForm = async () => {
  * @private
  */
 const _showDetectionPage = async (resFlag, ga, copied, script, extLink, time) => {
-    location.assign(`chrome-extension://${chrome.runtime.id}/src/warning/index.html?url=${location.hostname}&resFlag=${resFlag}&ga=${ga}&copy=${copied}&script=${script}&extLink=${extLink}&time=${time}`)
+    location.assign(`chrome-extension://${chrome.runtime.id}/src/warning/index.html?url=${location.hostname}&resFlag=${resFlag}&ga=${ga}&copied=${copied}&script=${script}&extLink=${extLink}&time=${time}`)
 }
 
 
@@ -247,6 +247,6 @@ const _checkExtLink = async () => {
 main(false).then(async (res) => {
     // 検出済みflagが立っていたら警告ページを表示
     if (res.resFlag === "Phish") {
-        await _showDetectionPage(res.ga, res.copied, res.script, res.extLink, res.time);
+        await _showDetectionPage(res.resFlag, res.ga, res.copied, res.script, res.extLink, res.time);
     }
 }).catch(e => console.error(e));
