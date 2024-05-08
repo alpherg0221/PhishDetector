@@ -10,7 +10,7 @@ import {
 } from "@fluentui/react";
 import "./App.css"
 import { useEffect, useState } from "react";
-import { getSendInfo } from "../utils/utils.ts";
+import { deleteList, getSendInfo, reportToFirenze, setList } from "../utils/utils.ts";
 
 const App = () => {
   const isEnglish = window.navigator.language === "en";
@@ -19,46 +19,39 @@ const App = () => {
   // 誤検出の報告
   const reportFP = async () => {
     const data = Object.fromEntries(new URLSearchParams(location.search));
-
-    const formData = new FormData();
-    formData.append("type", "FP");
-    Object.keys(data).forEach(key => formData.append(key, data[key]));
-
-    await fetch("https://www.az.lab.uec.ac.jp/~ywatanabe/PhishingDetector/api/info.php", {
-      mode: "cors",
-      method: "POST",
-      body: formData,
-    });
+    await reportToFirenze("FP", data);
 
     // 報告したらダイアログを出す
     setHiddenDialog(false);
   }
 
   // フィッシングページへのアクセス (警告無視時と誤検出報告後)
-  const accessPage = () => {
+  const accessPage = async () => {
+    const data = Object.fromEntries(new URLSearchParams(location.search));
+
+    // AllowリストにURLを追加
+    await setList("Allow", data.url);
+    // BlockリストからURL (検出時に追加されていたもの) を削除
+    await deleteList("Block", data.url);
+
     history.go(-1);
   }
 
   // 警告ページを閉じる
   const closePage = () => chrome.runtime.sendMessage({ type: "close" });
 
-  // 検出の報告 (許可されている場合のみ)
   useEffect(() => {
+    const data = Object.fromEntries(new URLSearchParams(location.search));
+
+    // 検出の報告 (許可されている場合のみ)
     getSendInfo().then(async (res) => {
       if (res) {
-        const data = Object.fromEntries(new URLSearchParams(location.search));
-
-        const formData = new FormData();
-        formData.append("type", "Detect");
-        Object.keys(data).forEach(key => formData.append(key, data[key]));
-
-        await fetch("https://www.az.lab.uec.ac.jp/~ywatanabe/PhishingDetector/api/info.php", {
-          mode: "cors",
-          method: "POST",
-          body: formData,
-        });
+        await reportToFirenze("Detect", data);
       }
-    })
+    });
+
+    // Blockリストに追加
+    setList("Block", data.url).then();
   }, []);
 
   return (

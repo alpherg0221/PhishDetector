@@ -1,5 +1,5 @@
 import { DefaultButton, FontIcon, PrimaryButton, Stack, Text, ThemeProvider, Toggle } from "@fluentui/react";
-import { getSendInfo, setSendInfo } from "../utils/utils.ts";
+import { getSendInfo, reportToFirenze, setList, setSendInfo } from "../utils/utils.ts";
 import { useEffect, useState } from "react";
 
 const App = () => {
@@ -10,15 +10,9 @@ const App = () => {
 
   // 検出漏れの報告
   const reportFN = async () => {
-    const formData = new FormData();
-    formData.append("type", "FN");
-    Object.keys(detectRes).forEach(key => formData.append(key, detectRes[key]));
+    await reportToFirenze("FN", detectRes);
 
-    await fetch("https://www.az.lab.uec.ac.jp/~ywatanabe/PhishingDetector/api/info.php", {
-      mode: "cors",
-      method: "POST",
-      body: formData,
-    });
+    await setList("Block", detectRes.url);
   }
 
   useEffect(() => {
@@ -52,8 +46,9 @@ const App = () => {
             { isEnglish ? "Report this page as phishing" : "このページをフィッシングとして報告" }
           </PrimaryButton>
 
-          <Stack horizontalAlign="center" tokens={ { childrenGap: 10 } }>
+          <Stack horizontalAlign="center" tokens={ { childrenGap: 20 } }>
             <Text style={ { fontSize: "1.5em", fontWeight: "bold" } }> 設定 </Text>
+
             <Toggle
               checked={ sendInfo }
               label={
@@ -76,11 +71,15 @@ const App = () => {
                 updateSendInfo(await getSendInfo());
               } }
             />
+
+            <DefaultButton iconProps={ { iconName: "OpenInNewTab" } } onClick={
+              async () => await chrome.runtime.sendMessage({ type: "list", listType: "Block" })
+            }> Block list </DefaultButton>
+
+            <DefaultButton iconProps={ { iconName: "OpenInNewTab" } } onClick={
+              async () => await chrome.runtime.sendMessage({ type: "list", listType: "Allow" })
+            }> Allow list </DefaultButton>
           </Stack>
-
-          <DefaultButton iconProps={ { iconName: "OpenInNewTab" } }>Block list</DefaultButton>
-
-          <DefaultButton iconProps={ { iconName: "OpenInNewTab" } }>Allow list</DefaultButton>
         </Stack>
       </ThemeProvider>
     </>

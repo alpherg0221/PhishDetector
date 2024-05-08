@@ -10,6 +10,7 @@ export default defineConfig({
         warning: resolve(__dirname, `src/warning/index.html`),
         popup: resolve(__dirname, `src/popup/index.html`),
         startup: resolve(__dirname, `src/startup/index.html`),
+        list: resolve(__dirname, `src/list/index.html`),
       },
       output: {
         assetFileNames: `src/assets/[name].[ext]`,

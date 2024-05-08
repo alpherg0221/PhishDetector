@@ -11,10 +11,46 @@ const sleep = (second) => new Promise(resolve => setTimeout(resolve, second));
 
 
 /**
- * @returns {Promise<{resFlag: string, url: string, ga: boolean, copied: boolean, script: number, extLink: number, time: string}>}
+ * @returns {Promise<{resFlag: "NoPasswordForm"|"Safe"|"Phish"|"Unknown", url: string, ga: boolean, copied: boolean, script: number, extLink: number, time: string, detectBy: "Indicator" | "List"}>}
  * @param noSleep {boolean}
  */
 const main = async (noSleep) => {
+    // BlockリストとAllowリストによる判定
+    /**
+     * @type {string[]}
+     */
+    const allowList = await chrome.storage.local.get(["Allowlist"]).then(res => res.Allowlist ?? []);
+    /**
+     * @type {string[]}
+     */
+    const blockList = await chrome.storage.local.get(["Blocklist"]).then(res => res.Blocklist ?? []);
+
+    if (allowList.includes(location.hostname)) {
+        return {
+            resFlag: "Safe",
+            url: location.hostname,
+            ga: false,
+            copied: false,
+            script: 0,
+            extLink: 0,
+            time: "0",
+            detectBy: "List",
+        }
+    }
+
+    if (blockList.includes(location.hostname)) {
+        return {
+            resFlag: "Phish",
+            url: location.hostname,
+            ga: false,
+            copied: false,
+            script: 0,
+            extLink: 0,
+            time: "0",
+            detectBy: "List",
+        }
+    }
+
     // Shadow DOM対策
     Element.prototype._attachShadow = Element.prototype.attachShadow;
     Element.prototype.attachShadow = () => this._attachShadow({mode: "open"});
@@ -87,6 +123,7 @@ const main = async (noSleep) => {
         script: script,
         extLink: extLink,
         time: (performance.now() / 1000 - startTime + 2).toFixed(digits),
+        detectBy: "Indicator",
     }
 }
 
@@ -115,6 +152,7 @@ const _isExistPasswordForm = async () => {
 
 /**
  * @param {string} resFlag
+ * @param {string} detectBy
  * @param {boolean} ga
  * @param {boolean} copied
  * @param {number} script
@@ -123,8 +161,8 @@ const _isExistPasswordForm = async () => {
  * @returns {Promise<void>}
  * @private
  */
-const _showDetectionPage = async (resFlag, ga, copied, script, extLink, time) => {
-    location.assign(`chrome-extension://${chrome.runtime.id}/src/warning/index.html?url=${location.hostname}&resFlag=${resFlag}&ga=${ga}&copied=${copied}&script=${script}&extLink=${extLink}&time=${time}`)
+const _showDetectionPage = async (resFlag, detectBy, ga, copied, script, extLink, time) => {
+    location.assign(`chrome-extension://${chrome.runtime.id}/src/warning/index.html?url=${location.hostname}&resFlag=${resFlag}&detectBy=${detectBy}&ga=${ga}&copied=${copied}&script=${script}&extLink=${extLink}&time=${time}`)
 }
 
 
@@ -247,6 +285,6 @@ const _checkExtLink = async () => {
 main(false).then(async (res) => {
     // 検出済みflagが立っていたら警告ページを表示
     if (res.resFlag === "Phish") {
-        await _showDetectionPage(res.resFlag, res.ga, res.copied, res.script, res.extLink, res.time);
+        await _showDetectionPage(res.resFlag, res.detectBy, res.ga, res.copied, res.script, res.extLink, res.time);
     }
 }).catch(e => console.error(e));
