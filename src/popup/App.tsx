@@ -1,4 +1,14 @@
-import { DefaultButton, FontIcon, PrimaryButton, Stack, Text, ThemeProvider, Toggle } from "@fluentui/react";
+import {
+  DefaultButton,
+  FontIcon,
+  MessageBar,
+  MessageBarType,
+  PrimaryButton,
+  Stack,
+  Text,
+  ThemeProvider,
+  Toggle
+} from "@fluentui/react";
 import { getSendInfo, reportToFirenze, setList, setSendInfo } from "../utils/utils.ts";
 import { useEffect, useState } from "react";
 
@@ -7,12 +17,15 @@ const App = () => {
   const [sendInfo, updateSendInfo] = useState(false);
   const [detected, setDetected] = useState("");
   const [detectRes, setDetectRes] = useState<{ [p: string]: string }>({});
+  const [showMsgBar, setShowMsgBar] = useState(false);
 
   // 検出漏れの報告
   const reportFN = async () => {
     await reportToFirenze("FN", detectRes);
 
     await setList("Block", detectRes.url);
+
+    setShowMsgBar(true);
   }
 
   useEffect(() => {
@@ -80,6 +93,14 @@ const App = () => {
               async () => await chrome.runtime.sendMessage({ type: "list", listType: "Allow" })
             }> Allow list </DefaultButton>
           </Stack>
+
+          { showMsgBar &&
+              <MessageBar
+                  messageBarType={ MessageBarType.success }
+                  isMultiline={ false }
+                  onDismiss={ () => setShowMsgBar(false) }
+              > Thank you for reporting </MessageBar>
+          }
         </Stack>
       </ThemeProvider>
     </>
