@@ -10,7 +10,7 @@ import {
 } from "@fluentui/react";
 import "./App.css"
 import { useEffect, useState } from "react";
-import { deleteList, getSendInfo, reportToFirenze, setList } from "../utils/utils.ts";
+import { deleteList, getSendInfo, ListType, reportToFirenze, setList } from "../utils/utils.ts";
 
 const App = () => {
   const isEnglish = window.navigator.language === "en";
@@ -30,9 +30,9 @@ const App = () => {
     const data = Object.fromEntries(new URLSearchParams(location.search));
 
     // AllowリストにURLを追加
-    await setList("Allow", data.url);
+    await setList(ListType.Allow, data.url);
     // BlockリストからURL (検出時に追加されていたもの) を削除
-    await deleteList("Block", data.url);
+    await deleteList(ListType.Block, data.url);
 
     history.go(-1);
   }
@@ -51,7 +51,7 @@ const App = () => {
     });
 
     // Blockリストに追加
-    setList("Block", data.url).then();
+    setList(ListType.Block, data.url).then();
   }, []);
 
   return (

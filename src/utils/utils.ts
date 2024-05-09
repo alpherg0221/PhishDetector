@@ -27,7 +27,12 @@ export const setSendInfo = async (value: boolean) => {
   await chrome.storage.local.set({ sendInfo: value });
 }
 
-export const getList: (type: "Allow" | "Block") => Promise<string[]> = async (type) => {
+export enum ListType {
+  Allow = "Allow",
+  Block = "Block",
+}
+
+export const getList: (type: ListType) => Promise<string[]> = async (type) => {
   const list: string[] | undefined = await chrome.storage.local.get([`${ type }list`]).then(res => res[`${ type }list`]);
   if (list === undefined) {
     return [];
@@ -36,14 +41,14 @@ export const getList: (type: "Allow" | "Block") => Promise<string[]> = async (ty
   }
 }
 
-export const setList = async (type: "Allow" | "Block", value: string) => {
+export const setList = async (type: ListType, value: string) => {
   // Setを使って値が重複しないように更新
   const currentList = await getList(type);
   const newList = [...(new Set([...currentList, value]))];
   await chrome.storage.local.set({ [`${ type }list`]: newList });
 }
 
-export const deleteList = async (type: "Allow" | "Block", value: string) => {
+export const deleteList = async (type: ListType, value: string) => {
   const currentList = await getList(type);
   const newList = currentList.filter(e => e !== value);
   await chrome.storage.local.set({ [`${ type }list`]: newList });

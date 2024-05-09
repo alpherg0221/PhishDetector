@@ -9,7 +9,7 @@ import {
   ThemeProvider,
   Toggle
 } from "@fluentui/react";
-import { getSendInfo, reportToFirenze, setList, setSendInfo } from "../utils/utils.ts";
+import { getSendInfo, ListType, reportToFirenze, setList, setSendInfo } from "../utils/utils.ts";
 import { useEffect, useState } from "react";
 
 const App = () => {
@@ -23,7 +23,7 @@ const App = () => {
   const reportFN = async () => {
     await reportToFirenze("FN", detectRes);
 
-    await setList("Block", detectRes.url);
+    await setList(ListType.Block, detectRes.url);
 
     setShowMsgBar(true);
   }
