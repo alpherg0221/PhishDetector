@@ -19,7 +19,7 @@ const App = () => {
         <Stack horizontalAlign="center" tokens={ { childrenGap: 20 } } style={ { paddingTop: "50px" } }>
           <Stack horizontal horizontalAlign="center" verticalAlign="center" tokens={ { childrenGap: 20 } }>
             <img src="/icon/icon48.svg" alt="BrandIcon" width={ 48 } height={ 48 }/>
-            <Text style={ { fontSize: "2.5em" } }>PhishDetector for Chrome Extension</Text>
+            <Text style={ { fontSize: "2.5em" } }>PhishDetector</Text>
           </Stack>
 
           <Text style={ { fontSize: "2em", fontWeight: "bold", paddingTop: 25 } }> 使用方法 </Text>
