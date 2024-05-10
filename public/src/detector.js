@@ -17,6 +17,10 @@ const sleep = (second) => new Promise(resolve => setTimeout(resolve, second));
 const main = async (noSleep) => {
     // BlockリストとAllowリストによる判定
     /**
+     * @type {boolean}
+     */
+    const useAllowList = await chrome.storage.local.get(["useAllowList"]).then(res => res.useAllowList ?? false);
+    /**
      * @type {string[]}
      */
     const allowList = await chrome.storage.local.get(["Allowlist"]).then(res => res.Allowlist ?? []);
@@ -25,16 +29,18 @@ const main = async (noSleep) => {
      */
     const blockList = await chrome.storage.local.get(["Blocklist"]).then(res => res.Blocklist ?? []);
 
-    if (allowList.includes(location.hostname)) {
-        return {
-            resFlag: "Safe",
-            url: location.hostname,
-            ga: false,
-            copied: false,
-            script: 0,
-            extLink: 0,
-            time: "0",
-            detectBy: "List",
+    if (useAllowList) {
+        if (allowList.includes(location.hostname)) {
+            return {
+                resFlag: "Safe",
+                url: location.hostname,
+                ga: false,
+                copied: false,
+                script: 0,
+                extLink: 0,
+                time: "0",
+                detectBy: "List",
+            }
         }
     }
 

@@ -1,11 +1,13 @@
 import { PrimaryButton, Stack, Text, ThemeProvider, Toggle } from "@fluentui/react";
-import { getSendInfo, setSendInfo } from "../utils/utils.ts";
+import { getSendInfo, getUseAllowList, setSendInfo, setUseAllowList } from "../utils/utils.ts";
 import { useEffect, useState } from "react";
 
 const App = () => {
   const [sendInfo, updateSendInfo] = useState(false);
+  const [useAllowList, updateUseAllowList] = useState(false);
   useEffect(() => {
     getSendInfo().then(v => updateSendInfo(v));
+    getUseAllowList().then(v => updateUseAllowList(v));
   }, []);
 
   return (
@@ -44,6 +46,21 @@ const App = () => {
               await setSendInfo(checked ?? false);
               updateSendInfo(await getSendInfo());
             } }/>
+
+          <Toggle
+            checked={ useAllowList }
+            label={ <Text style={ {
+              fontSize: "1.5em",
+              fontWeight: "bolder"
+            } }>Allow listを使用する</Text> }
+            inlineLabel
+            onText=" "
+            offText=" "
+            onChange={ async (_, checked) => {
+              await setUseAllowList(checked ?? false);
+              updateUseAllowList(await getUseAllowList());
+            } }
+          />
 
           <PrimaryButton onClick={ () => chrome.runtime.sendMessage({ type: "close" }) }>
             設定を保存してページを閉じる

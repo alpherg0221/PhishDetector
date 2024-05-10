@@ -10,10 +10,11 @@ import {
 } from "@fluentui/react";
 import "./App.css"
 import { useEffect, useState } from "react";
-import { deleteList, getSendInfo, ListType, reportToFirenze, setList } from "../utils/utils.ts";
+import { deleteList, getSendInfo, getUseAllowList, ListType, reportToFirenze, setList } from "../utils/utils.ts";
 
 const App = () => {
   const isEnglish = window.navigator.language === "en";
+  const [useAllowList, updateUseAllowList] = useState(false);
   const [hiddenDialog, setHiddenDialog] = useState(true);
 
   // 誤検出の報告
@@ -30,7 +31,7 @@ const App = () => {
     const data = Object.fromEntries(new URLSearchParams(location.search));
 
     // AllowリストにURLを追加
-    await setList(ListType.Allow, data.url);
+    if (useAllowList) await setList(ListType.Allow, data.url);
     // BlockリストからURL (検出時に追加されていたもの) を削除
     await deleteList(ListType.Block, data.url);
 
@@ -49,6 +50,8 @@ const App = () => {
         await reportToFirenze("Detect", data);
       }
     });
+
+    getUseAllowList().then(v => updateUseAllowList(v));
 
     // Blockリストに追加
     setList(ListType.Block, data.url).then();

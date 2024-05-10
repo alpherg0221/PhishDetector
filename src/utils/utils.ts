@@ -27,6 +27,19 @@ export const setSendInfo = async (value: boolean) => {
   await chrome.storage.local.set({ sendInfo: value });
 }
 
+export const setUseAllowList = async (value: boolean) => {
+  await chrome.storage.local.set({ useAllowList: value });
+}
+
+export const getUseAllowList: () => Promise<boolean> = async () => {
+  const useAllowList: boolean | undefined = await chrome.storage.local.get(["useAllowList"]).then(res => res.useAllowList);
+  if (useAllowList === undefined) {
+    return false;
+  } else {
+    return useAllowList;
+  }
+}
+
 export enum ListType {
   Allow = "Allow",
   Block = "Block",
@@ -51,5 +64,9 @@ export const setList = async (type: ListType, value: string) => {
 export const deleteList = async (type: ListType, value: string) => {
   const currentList = await getList(type);
   const newList = currentList.filter(e => e !== value);
-  await chrome.storage.local.set({ [`${ type }list`]: newList });
+  if (newList.length === 1 && newList[0] === null) {
+    await chrome.storage.local.set({ [`${ type }list`]: [] });
+  } else {
+    await chrome.storage.local.set({ [`${ type }list`]: newList });
+  }
 }

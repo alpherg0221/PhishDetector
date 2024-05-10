@@ -9,12 +9,21 @@ import {
   ThemeProvider,
   Toggle
 } from "@fluentui/react";
-import { getSendInfo, ListType, reportToFirenze, setList, setSendInfo } from "../utils/utils.ts";
+import {
+  getSendInfo,
+  getUseAllowList,
+  ListType,
+  reportToFirenze,
+  setList,
+  setSendInfo,
+  setUseAllowList
+} from "../utils/utils.ts";
 import { useEffect, useState } from "react";
 
 const App = () => {
   const isEnglish = window.navigator.language === "en";
   const [sendInfo, updateSendInfo] = useState(false);
+  const [useAllowList, updateUseAllowList] = useState(false);
   const [detected, setDetected] = useState("");
   const [detectRes, setDetectRes] = useState<{ [p: string]: string }>({});
   const [showMsgBar, setShowMsgBar] = useState(false);
@@ -30,6 +39,7 @@ const App = () => {
 
   useEffect(() => {
     getSendInfo().then(v => updateSendInfo(v));
+    getUseAllowList().then(v => updateUseAllowList(v));
     chrome.runtime.sendMessage({ type: "detection" }).then(res => {
       setDetected(res.resFlag);
       setDetectRes(res);
@@ -82,6 +92,29 @@ const App = () => {
               onChange={ async (_, checked) => {
                 await setSendInfo(checked ?? false);
                 updateSendInfo(await getSendInfo());
+              } }
+            />
+
+            <Toggle
+              checked={ useAllowList }
+              label={
+                <Stack horizontal verticalAlign="center">
+                  <FontIcon iconName="CheckList" style={ { paddingLeft: 26, fontSize: 20, fontWeight: "bolder" } }/>
+                  <Text style={ {
+                    fontSize: "1em",
+                    fontWeight: "bolder",
+                    paddingLeft: 26
+                  } }>
+                    { isEnglish ? "Allow listを使用する" : "Allow listを使用する" }
+                  </Text>
+                </Stack>
+              }
+              inlineLabel
+              onText=" "
+              offText=" "
+              onChange={ async (_, checked) => {
+                await setUseAllowList(checked ?? false);
+                updateUseAllowList(await getUseAllowList());
               } }
             />
 
