@@ -11,12 +11,12 @@ import {
 } from "@fluentui/react";
 import {
   getSendInfo,
-  getUseAllowList,
+  getUseAllowList, getUseBlockList,
   ListType,
   reportToFirenze,
   setList,
   setSendInfo,
-  setUseAllowList
+  setUseAllowList, setUseBlockList
 } from "../utils/utils.ts";
 import { useEffect, useState } from "react";
 
@@ -24,6 +24,7 @@ const App = () => {
   const isEnglish = window.navigator.language === "en";
   const [sendInfo, updateSendInfo] = useState(false);
   const [useAllowList, updateUseAllowList] = useState(false);
+  const [useBlockList, updateUseBlockList] = useState(false);
   const [detected, setDetected] = useState("");
   const [detectRes, setDetectRes] = useState<{ [p: string]: string }>({});
   const [showMsgBar, setShowMsgBar] = useState(false);
@@ -32,7 +33,7 @@ const App = () => {
   const reportFN = async () => {
     await reportToFirenze("FN", detectRes);
 
-    await setList(ListType.Block, detectRes.url);
+    if (useBlockList) await setList(ListType.Block, detectRes.url);
 
     setShowMsgBar(true);
   }
@@ -40,6 +41,7 @@ const App = () => {
   useEffect(() => {
     getSendInfo().then(v => updateSendInfo(v));
     getUseAllowList().then(v => updateUseAllowList(v));
+    getUseBlockList().then(v => updateUseBlockList(v));
     chrome.runtime.sendMessage({ type: "detection" }).then(res => {
       setDetected(res.resFlag);
       setDetectRes(res);
@@ -69,7 +71,7 @@ const App = () => {
             { isEnglish ? "Report this page as phishing" : "このページをフィッシングとして報告" }
           </PrimaryButton>
 
-          <Stack horizontalAlign="center" tokens={ { childrenGap: 20 } }>
+          <Stack horizontalAlign="center" tokens={ { childrenGap: 12 } }>
             <Text style={ { fontSize: "1.5em", fontWeight: "bold" } }> 設定 </Text>
 
             <Toggle
@@ -96,10 +98,35 @@ const App = () => {
             />
 
             <Toggle
+              checked={ useBlockList }
+              label={
+                <Stack horizontal verticalAlign="center">
+                  <FontIcon iconName="RemoveFromShoppingList"
+                            style={ { paddingLeft: 26, fontSize: 20, fontWeight: "bolder" } }/>
+                  <Text style={ {
+                    fontSize: "1em",
+                    fontWeight: "bolder",
+                    paddingLeft: 26
+                  } }>
+                    { isEnglish ? "Block listを使用する" : "Block listを使用する" }
+                  </Text>
+                </Stack>
+              }
+              inlineLabel
+              onText=" "
+              offText=" "
+              onChange={ async (_, checked) => {
+                await setUseBlockList(checked ?? false);
+                updateUseBlockList(await getUseBlockList());
+              } }
+            />
+
+            <Toggle
               checked={ useAllowList }
               label={
                 <Stack horizontal verticalAlign="center">
-                  <FontIcon iconName="CheckList" style={ { paddingLeft: 26, fontSize: 20, fontWeight: "bolder" } }/>
+                  <FontIcon iconName="WaitlistConfirm"
+                            style={ { paddingLeft: 26, fontSize: 20, fontWeight: "bolder" } }/>
                   <Text style={ {
                     fontSize: "1em",
                     fontWeight: "bolder",

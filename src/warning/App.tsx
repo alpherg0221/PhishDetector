@@ -10,7 +10,15 @@ import {
 } from "@fluentui/react";
 import "./App.css"
 import { useEffect, useState } from "react";
-import { deleteList, getSendInfo, getUseAllowList, ListType, reportToFirenze, setList } from "../utils/utils.ts";
+import {
+  deleteList,
+  getSendInfo,
+  getUseAllowList,
+  getUseBlockList,
+  ListType,
+  reportToFirenze,
+  setList
+} from "../utils/utils.ts";
 
 const App = () => {
   const isEnglish = window.navigator.language === "en";
@@ -51,10 +59,13 @@ const App = () => {
       }
     });
 
-    getUseAllowList().then(v => updateUseAllowList(v));
-
     // Blockリストに追加
-    setList(ListType.Block, data.url).then();
+    getUseBlockList().then(v => {
+      if (v) {
+        setList(ListType.Block, data.url).then();
+      }
+    });
+    getUseAllowList().then(v => updateUseAllowList(v));
   }, []);
 
   return (

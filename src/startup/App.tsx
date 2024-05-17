@@ -1,12 +1,21 @@
 import { PrimaryButton, Stack, Text, ThemeProvider, Toggle } from "@fluentui/react";
-import { getSendInfo, getUseAllowList, setSendInfo, setUseAllowList } from "../utils/utils.ts";
+import {
+  getSendInfo,
+  getUseAllowList,
+  getUseBlockList,
+  setSendInfo,
+  setUseAllowList,
+  setUseBlockList
+} from "../utils/utils.ts";
 import { useEffect, useState } from "react";
 
 const App = () => {
   const [sendInfo, updateSendInfo] = useState(false);
+  const [useBlockList, updateUseBlockList] = useState(false);
   const [useAllowList, updateUseAllowList] = useState(false);
   useEffect(() => {
     getSendInfo().then(v => updateSendInfo(v));
+    getUseBlockList().then(v => updateUseBlockList(v));
     getUseAllowList().then(v => updateUseAllowList(v));
   }, []);
 
@@ -46,6 +55,21 @@ const App = () => {
               await setSendInfo(checked ?? false);
               updateSendInfo(await getSendInfo());
             } }/>
+
+          <Toggle
+            checked={ useBlockList }
+            label={ <Text style={ {
+              fontSize: "1.5em",
+              fontWeight: "bolder"
+            } }>Block listを使用する</Text> }
+            inlineLabel
+            onText=" "
+            offText=" "
+            onChange={ async (_, checked) => {
+              await setUseBlockList(checked ?? false);
+              updateUseBlockList(await getUseBlockList());
+            } }
+          />
 
           <Toggle
             checked={ useAllowList }

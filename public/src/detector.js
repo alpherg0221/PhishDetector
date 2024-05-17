@@ -19,6 +19,10 @@ const main = async (noSleep) => {
     /**
      * @type {boolean}
      */
+    const useBlockList = await chrome.storage.local.get(["useBlockList"]).then(res => res.useBlockList ?? false);
+    /**
+     * @type {boolean}
+     */
     const useAllowList = await chrome.storage.local.get(["useAllowList"]).then(res => res.useAllowList ?? false);
     /**
      * @type {string[]}
@@ -44,19 +48,20 @@ const main = async (noSleep) => {
         }
     }
 
-    if (blockList.includes(location.hostname)) {
-        return {
-            resFlag: "Phish",
-            url: location.hostname,
-            ga: false,
-            copied: false,
-            script: 0,
-            extLink: 0,
-            time: "0",
-            detectBy: "List",
+    if (useBlockList) {
+        if (blockList.includes(location.hostname)) {
+            return {
+                resFlag: "Phish",
+                url: location.hostname,
+                ga: false,
+                copied: false,
+                script: 0,
+                extLink: 0,
+                time: "0",
+                detectBy: "List",
+            }
         }
     }
-
     // Shadow DOM対策
     Element.prototype._attachShadow = Element.prototype.attachShadow;
     Element.prototype.attachShadow = () => this._attachShadow({mode: "open"});

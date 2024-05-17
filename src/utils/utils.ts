@@ -40,6 +40,19 @@ export const getUseAllowList: () => Promise<boolean> = async () => {
   }
 }
 
+export const setUseBlockList = async (value: boolean) => {
+  await chrome.storage.local.set({ useBlockList: value });
+}
+
+export const getUseBlockList: () => Promise<boolean> = async () => {
+  const useBlockList: boolean | undefined = await chrome.storage.local.get(["useBlockList"]).then(res => res.useBlockList);
+  if (useBlockList === undefined) {
+    return false;
+  } else {
+    return useBlockList;
+  }
+}
+
 export enum ListType {
   Allow = "Allow",
   Block = "Block",
