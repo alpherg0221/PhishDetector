@@ -42,6 +42,8 @@ const App = () => {
     if (useAllowList) await setList(ListType.Allow, data.url);
     // BlockリストからURL (検出時に追加されていたもの) を削除
     await deleteList(ListType.Block, data.url);
+    // TmpリストにURLを追加
+    await setList(ListType.Tmp, `${ data.url }@${ Date.now() + 300000 }`)
 
     history.go(-1);
   }

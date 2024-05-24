@@ -56,6 +56,7 @@ export const getUseBlockList: () => Promise<boolean> = async () => {
 export enum ListType {
   Allow = "Allow",
   Block = "Block",
+  Tmp = "Tmp",
 }
 
 export const getList: (type: ListType) => Promise<string[]> = async (type) => {

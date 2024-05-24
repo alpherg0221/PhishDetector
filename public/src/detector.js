@@ -32,36 +32,50 @@ const main = async (noSleep) => {
      * @type {string[]}
      */
     const blockList = await chrome.storage.local.get(["Blocklist"]).then(res => res.Blocklist ?? []);
+    /**
+     * @type {string[]}
+     */
+    const tmpList = await chrome.storage.local.get(["Tmplist"]).then(res => res.Tmplist ?? []).then(list => list.map(e => e.split("@")[0]));
 
-    if (useAllowList) {
-        if (allowList.includes(location.hostname)) {
-            return {
-                resFlag: "Safe",
-                url: location.hostname,
-                ga: false,
-                copied: false,
-                script: 0,
-                extLink: 0,
-                time: "0",
-                detectBy: "List",
-            }
+    if (useAllowList && allowList.includes(location.hostname)) {
+        return {
+            resFlag: "Safe",
+            url: location.hostname,
+            ga: false,
+            copied: false,
+            script: 0,
+            extLink: 0,
+            time: "0",
+            detectBy: "List",
         }
     }
 
-    if (useBlockList) {
-        if (blockList.includes(location.hostname)) {
-            return {
-                resFlag: "Phish",
-                url: location.hostname,
-                ga: false,
-                copied: false,
-                script: 0,
-                extLink: 0,
-                time: "0",
-                detectBy: "List",
-            }
+    if (useBlockList && blockList.includes(location.hostname)) {
+        return {
+            resFlag: "Phish",
+            url: location.hostname,
+            ga: false,
+            copied: false,
+            script: 0,
+            extLink: 0,
+            time: "0",
+            detectBy: "List",
         }
     }
+
+    if (tmpList.includes(location.hostname)) {
+        return {
+            resFlag: "Unknown",
+            url: location.hostname,
+            ga: false,
+            copied: false,
+            script: 0,
+            extLink: 0,
+            time: "0",
+            detectBy: "List",
+        }
+    }
+
     // Shadow DOM対策
     Element.prototype._attachShadow = Element.prototype.attachShadow;
     Element.prototype.attachShadow = () => this._attachShadow({mode: "open"});
