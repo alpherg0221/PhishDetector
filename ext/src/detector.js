@@ -147,7 +147,7 @@ const main = async (noSleep) => {
         copied: copied,
         script: script,
         extLink: extLink,
-        time: (performance.now() / 1000 - startTime + 2).toFixed(digits),
+        time: (performance.now() / 1000 - startTime).toFixed(digits),
         detectBy: "Indicator",
     }
 }
@@ -306,6 +306,31 @@ const _checkExtLink = async () => {
 
     return (external * 100 / (external + internal));
 }
+
+
+const mutationObserver = () => {
+    const targetNode = document.documentElement;
+    const config = {childList: true, subtree: true};
+
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach(mutation => {
+            mutation.addedNodes.forEach(node => {
+                if (node.nodeName.toLowerCase() === "input" && node.type === "password") {
+                    main(true).then(async (res) => {
+                        if (res.resFlag === "Phish") {
+                            await _showDetectionPage(res.resFlag, res.detectBy, res.ga, res.copied, res.script, res.extLink, res.time);
+                        }
+                    });
+                }
+            });
+        });
+    });
+    observer.observe(targetNode, config);
+}
+
+
+mutationObserver();
+
 
 main(false).then(async (res) => {
     // 検出済みflagが立っていたら警告ページを表示
