@@ -7,14 +7,17 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        warning: resolve(__dirname, `src/warning/index.html`),
-        popup: resolve(__dirname, `src/popup/index.html`),
-        startup: resolve(__dirname, `src/startup/index.html`),
-        list: resolve(__dirname, `src/list/index.html`),
+        'assets/warning': resolve(__dirname, `src/warning/index.html`),
+        'assets/popup': resolve(__dirname, `src/popup/index.html`),
+        'assets/startup': resolve(__dirname, `src/startup/index.html`),
+        'assets/list': resolve(__dirname, `src/list/index.html`),
+        'detector': resolve(__dirname, `src/detector.ts`),
+        'background': resolve(__dirname, `src/background.ts`),
       },
       output: {
         assetFileNames: `src/assets/[name].[ext]`,
-        entryFileNames: `src/assets/[name].js`,
+        entryFileNames: `src/[name].js`,
+        chunkFileNames: `assets/[name].js`
       }
     },
     outDir: "ext/"

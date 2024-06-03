@@ -1,0 +1,1 @@
+import{r as c,u as e}from"./utils.js";function l(r){var n=c.useState(r),u=n[0],t=n[1],o=e(function(){return function(){t(!0)}}),a=e(function(){return function(){t(!1)}}),s=e(function(){return function(){t(function(f){return!f})}});return[u,{setTrue:o,setFalse:a,toggle:s}]}export{l as u};
