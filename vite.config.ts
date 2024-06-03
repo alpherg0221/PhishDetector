@@ -13,12 +13,13 @@ export default defineConfig({
         'assets/list': resolve(__dirname, `src/list/index.html`),
         'detector': resolve(__dirname, `src/detector.ts`),
         'background': resolve(__dirname, `src/background.ts`),
+        'loader': resolve(__dirname, `src/loader.ts`),
       },
       output: {
         assetFileNames: `src/assets/[name].[ext]`,
         entryFileNames: `src/[name].js`,
-        chunkFileNames: `assets/[name].js`
-      }
+        chunkFileNames: `assets/[name].js`,
+      },
     },
     outDir: "ext/"
   }

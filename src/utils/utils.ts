@@ -75,6 +75,11 @@ export const setList = async (type: ListType, value: string) => {
   await chrome.storage.local.set({ [`${ type }list`]: newList });
 }
 
+export const updateList = async (type: ListType, value: string[]) => {
+  // listを置き換え
+  await chrome.storage.local.set({ [`${ type }list`]: value });
+}
+
 export const deleteList = async (type: ListType, value: string) => {
   const currentList = await getList(type);
   const newList = currentList.filter(e => e !== value);
