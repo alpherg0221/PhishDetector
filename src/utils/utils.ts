@@ -80,9 +80,9 @@ export const updateList = async (type: ListType, value: string[]) => {
   await chrome.storage.local.set({ [`${ type }list`]: value });
 }
 
-export const deleteList = async (type: ListType, value: string) => {
+export const deleteList = async (type: ListType, value: string, include: boolean = false) => {
   const currentList = await getList(type);
-  const newList = currentList.filter(e => e !== value);
+  const newList = currentList.filter(e => include ? !e.includes(value) : e !== value);
   if (newList.length === 1 && newList[0] === null) {
     await chrome.storage.local.set({ [`${ type }list`]: [] });
   } else {

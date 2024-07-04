@@ -1,4 +1,4 @@
-import { getList, ListType, updateList } from "./utils/utils.ts";
+import { deleteList, getList, ListType, updateList } from "./utils/utils.ts";
 
 chrome.runtime.onInstalled.addListener(async () => {
   await chrome.tabs.create({ url: `./src/startup/index.html` })
@@ -31,9 +31,14 @@ chrome.runtime.onMessage.addListener((msg, _, sendResponse) => {
   return true;
 });
 
+chrome.tabs.onRemoved.addListener((tabId) => {
+  console.log(tabId);
+  deleteList(ListType.Tmp, String(tabId), true).then();
+});
+
 const createAlarm = async () => {
   if (await chrome.alarms.get("checkTmp") === undefined) {
-    await chrome.alarms.create("checkTmp", {periodInMinutes: 0.5})
+    await chrome.alarms.create("checkTmp", { periodInMinutes: 0.5 })
   }
 }
 

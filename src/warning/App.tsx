@@ -43,7 +43,8 @@ const App = () => {
     // BlockリストからURL (検出時に追加されていたもの) を削除
     await deleteList(ListType.Block, data.url);
     // TmpリストにURLを追加
-    await setList(ListType.Tmp, `${ data.url }@${ Date.now() + 300000 }`)
+    const currentTabId = (await chrome.tabs.getCurrent())?.id;
+    await setList(ListType.Tmp, `${ data.url }@${ Date.now() + 300000 }@${ currentTabId }`);
 
     history.go(-1);
   }
