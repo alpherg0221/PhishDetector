@@ -116,12 +116,13 @@ def main(tuning: bool) -> pd.DataFrame:
                 auc = value
 
         precision = tp / (tp + fp)
-        print_result("precision", precision)
+        fpr = fp / (tn + fp)
+        print_result("precision", fpr)
         recall = tp / (tp + fn)
         print_result("recall", recall)
         f1 = (2 * precision * recall) / (precision + recall)
         print_result("f1", f1)
-        score_tmp.extend([accuracy, precision, recall, f1, auc])
+        score_tmp.extend([accuracy, fpr, recall, f1, auc])
 
         # 評価結果の格納
         df_append = pd.DataFrame([score_tmp], columns=cv_scores_columns)
@@ -142,11 +143,11 @@ def main(tuning: bool) -> pd.DataFrame:
 
 
 if __name__ == '__main__':
-    df_no_tuning = main(tuning=False)
-    # df_tuning = main(tuning=True)
+    # df_no_tuning = main(tuning=False)
+    df_tuning = main(tuning=True)
 
-    print("チューニングなし")
-    print(df_no_tuning)
+    # print("チューニングなし")
+    # print(df_no_tuning)
     # print(f"{'-' * 50}\n")
-    # print("チューニングあり")
-    # print(df_tuning)
+    print("チューニングあり")
+    print(df_tuning)
