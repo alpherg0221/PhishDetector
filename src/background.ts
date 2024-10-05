@@ -33,8 +33,8 @@ chrome.runtime.onMessage.addListener((msg, _, sendResponse) => {
         chrome.tabs.create({ url: `./src/list/index.html?listType=${ msg.listType }` }).then();
         return true;
       case "predict":
-        tfdf.setLocateFile(() => `chrome-extension://${ chrome.runtime.id }/inference.wasm`);
-        tfdf.loadTFDFModel(`chrome-extension://${ chrome.runtime.id }/tfjs_model/model.json`).then((model: TFDFModel) => {
+        tfdf.setLocateFile(() => chrome.runtime.getURL("inference.wasm"));
+        tfdf.loadTFDFModel(chrome.runtime.getURL("tfjs_model/model.json")).then((model: TFDFModel) => {
           model.executeAsync({
             "copied": tf.tensor(msg.copied, [1], 'int32'),
             "google_analytics": tf.tensor(msg.googleAnalytics, [1], 'int32'),

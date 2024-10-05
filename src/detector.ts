@@ -188,11 +188,11 @@ const _isExistPasswordForm = async () => {
 const _showDetectionPage = async (res: RetObj) => {
   if (res.detectBy === "List") {
     location.assign(
-      `chrome-extension://${ chrome.runtime.id }/src/warning/index.html?url=${ res.url }&resFlag=${ res.resFlag }&time=${ res.time }`
+      `${chrome.runtime.getURL("src/warning/index.html")}?url=${ res.url }&resFlag=${ res.resFlag }&time=${ res.time }`
     );
   } else if (res.detectBy === "RealTime") {
     location.assign(
-      `chrome-extension://${ chrome.runtime.id }/src/warning/index.html?url=${ res.url }&resFlag=${ res.resFlag }&time=${ res.time }&ga=${ res.ga }&copied=${ res.copied }&script=${ res.script }&extLink=${ res.extLink }&noTitle=${ res.noTitle }&samePageLink=${ res.samePageLink }&iframe=${ res.iframe }&tagCountInHead=${ res.tagCountInHead }&noDomainInInternalLink=${ res.noDomainInInternalLink }&invalidKiyaku=${ res.invalidKiyaku }&ipAddressInLink=${ res.ipAddressInLink }`
+      `${chrome.runtime.getURL("src/warning/index.html")}?url=${ res.url }&resFlag=${ res.resFlag }&time=${ res.time }&ga=${ res.ga }&copied=${ res.copied }&script=${ res.script }&extLink=${ res.extLink }&noTitle=${ res.noTitle }&samePageLink=${ res.samePageLink }&iframe=${ res.iframe }&tagCountInHead=${ res.tagCountInHead }&noDomainInInternalLink=${ res.noDomainInInternalLink }&invalidKiyaku=${ res.invalidKiyaku }&ipAddressInLink=${ res.ipAddressInLink }`
     );
   }
 }
