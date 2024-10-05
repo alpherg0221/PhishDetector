@@ -1,7 +1,7 @@
 {
   "name": "phish_detector",
   "private": true,
-  "version": "1.4.0",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@fluentui/react": "^8.112.6",
+    "@tensorflow/tfjs": "^4.21.0",
+    "@tensorflow/tfjs-tfdf": "^0.0.1-alpha.28",
     "@types/chrome": "^0.0.250",
     "@types/node": "^20.9.0",
     "react": "^18.2.0",

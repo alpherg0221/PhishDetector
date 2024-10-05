@@ -1,5 +1,6 @@
 import { getList, getUseAllowList, getUseBlockList, ListType } from "./utils/utils.ts";
 
+
 chrome.runtime.onMessage.addListener((msg, _, sendResponse) => {
   switch (msg.type) {
     case "detection":
@@ -12,19 +13,26 @@ chrome.runtime.onMessage.addListener((msg, _, sendResponse) => {
 const sleep = (second: number) => new Promise(resolve => setTimeout(resolve, second));
 
 
-type ResFlag = "NoPasswordForm" | "Safe" | "Phish" | "Unknown" | "_Phish"
-type DetectBy = "Indicator" | "List";
+type ResFlag = "NoPasswordForm" | "Safe" | "Phish" | "_Phish"
+type DetectBy = "RealTime" | "List";
 
 
 type RetObj = {
   resFlag: ResFlag,
   url: string,
-  ga: boolean,
-  copied: boolean,
-  script: number,
-  extLink: number,
   time: string,
   detectBy: DetectBy,
+  copied: number,
+  ga: number,
+  script: number,
+  extLink: number,
+  noTitle: number,
+  samePageLink: number,
+  iframe: number,
+  tagCountInHead: number,
+  noDomainInInternalLink: number,
+  invalidKiyaku: number,
+  ipAddressInLink: number,
 }
 
 
@@ -48,10 +56,6 @@ const main = async (noSleep: boolean) => {
     return <RetObj>{
       resFlag: "Safe",
       url: location.hostname,
-      ga: false,
-      copied: false,
-      script: 0,
-      extLink: 0,
       time: "0",
       detectBy: "List",
     }
@@ -61,10 +65,6 @@ const main = async (noSleep: boolean) => {
     return <RetObj>{
       resFlag: "Phish",
       url: location.hostname,
-      ga: false,
-      copied: false,
-      script: 0,
-      extLink: 0,
       time: "0",
       detectBy: "List",
     }
@@ -74,10 +74,6 @@ const main = async (noSleep: boolean) => {
     return <RetObj>{
       resFlag: "_Phish",
       url: location.hostname,
-      ga: false,
-      copied: false,
-      script: 0,
-      extLink: 0,
       time: "0",
       detectBy: "List",
     }
@@ -92,56 +88,82 @@ const main = async (noSleep: boolean) => {
   // 時間計測開始
   const startTime: number = performance.now() / 1000;
   // 検出されたか判定するフラグ
-  let resFlag: ResFlag = "Unknown";
-  // 各指標の値
-  let ga: boolean;
-  let copied: boolean;
-  let script: number;
-  let extLink: number;
+  let resFlag: ResFlag = "Safe";
 
   // JSによるコンテンツ生成まで2秒待機
   if (!noSleep) await sleep(2000);
 
   // ページ内にpasswordの入力フォームがなければ処理終了
   if (!(await _isExistPasswordForm())) {
-    console.log(`PhishDetector:NoPasswordForm:${ (performance.now() / 1000 - startTime).toFixed(digits) }`);
     resFlag = "NoPasswordForm";
+    console.log("PhishDetector:NoPasswordForm");
   }
 
-  // 各指標をチェック
-  ga = await _checkGoogleAnalytics();
-  if (ga) {
-    if (resFlag !== "NoPasswordForm") resFlag = "Safe";
-    console.log(`PhishDetector:GA:${ (performance.now() / 1000 - startTime).toFixed(digits) }`);
-  }
 
-  copied = await _checkCopied();
-  if (copied) {
-    if (resFlag !== "NoPasswordForm") resFlag = "Phish";
-    console.log(`PhishDetector:Copy:${ (performance.now() / 1000 - startTime).toFixed(digits) }`);
-  }
+  // 各指標の値
+  const copied: number = await _checkCopied();
+  const ga: number = await _checkGoogleAnalytics();
+  const script: number = await _checkScriptTagCount();
+  const extLink: number = await _checkExtLink();
+  const noTitle: number = await _checkNoTitle();
+  const samePageLink: number = await _checkSamePageLinkCount();
+  const iframe: number = await _checkIframeTagCount();
+  const tagCountInHead: number = await _checkCountInHeadTag();
+  const noDomainInInternalLink: number = await _checkNoDomainInInternalLink();
+  const invalidKiyaku: number = await _checkInvalidKiyaku();
+  const ipAddressInLink: number = await _checkIpAddressInLink();
 
-  script = await _checkScriptTagCount();
-  if (script <= 11) {
-    if (resFlag !== "NoPasswordForm") resFlag = "Phish";
-    console.log(`PhishDetector:Script:${ (performance.now() / 1000 - startTime).toFixed(digits) }`);
-  }
+  if (resFlag !== "NoPasswordForm") {
+    console.log("PhishDetector : Start Detection");
 
-  extLink = await _checkExtLink();
-  if (extLink >= 64) {
-    if (resFlag !== "NoPasswordForm") resFlag = "Phish";
-    console.log(`PhishDetector:ExtLink:${ (performance.now() / 1000 - startTime).toFixed(digits) }`);
+    const features = {
+      "copied": copied,
+      "googleAnalytics": ga,
+      "scriptTagCount": script,
+      "externalLinkPercentage": extLink,
+      "noTitle": noTitle,
+      "samePageLink": samePageLink,
+      "iframeTagCount": iframe,
+      "tagCountInHeadTag": tagCountInHead,
+      "noDomainInInternalLink": noDomainInInternalLink,
+      "invalidKiyaku": invalidKiyaku,
+      "ipAddressInLink": ipAddressInLink,
+    };
+    console.log(features);
+
+    // 検出処理
+    const result = await chrome.runtime.sendMessage({
+      "type": "predict",
+      ...features,
+    });
+
+    console.log(`PhishDetector : Result : ${ result }`);
+
+    console.log("PhishDetector : Finish Detection");
+
+    if (result >= 0.5) {
+      resFlag = "Phish";
+    } else {
+      resFlag = "Safe";
+    }
   }
 
   return <RetObj>{
     resFlag: resFlag,
     url: location.hostname,
-    ga: ga,
+    time: (performance.now() / 1000 - startTime).toFixed(digits),
+    detectBy: "RealTime",
     copied: copied,
+    ga: ga,
     script: script,
     extLink: extLink,
-    time: (performance.now() / 1000 - startTime).toFixed(digits),
-    detectBy: "Indicator",
+    noTitle: noTitle,
+    samePageLink: samePageLink,
+    iframe: iframe,
+    tagCountInHead: tagCountInHead,
+    noDomainInInternalLink: noDomainInInternalLink,
+    invalidKiyaku: invalidKiyaku,
+    ipAddressInLink: ipAddressInLink,
   }
 }
 
@@ -163,8 +185,28 @@ const _isExistPasswordForm = async () => {
 }
 
 
-const _showDetectionPage = async (resFlag: ResFlag, detectBy: DetectBy, ga: boolean, copied: boolean, script: number, extLink: number, time: string) => {
-  location.assign(`chrome-extension://${ chrome.runtime.id }/src/warning/index.html?url=${ location.hostname }&resFlag=${ resFlag }&detectBy=${ detectBy }&ga=${ ga }&copied=${ copied }&script=${ script }&extLink=${ extLink }&time=${ time }`)
+const _showDetectionPage = async (res: RetObj) => {
+  if (res.detectBy === "List") {
+    location.assign(
+      `chrome-extension://${ chrome.runtime.id }/src/warning/index.html?url=${ res.url }&resFlag=${ res.resFlag }&time=${ res.time }`
+    );
+  } else if (res.detectBy === "RealTime") {
+    location.assign(
+      `chrome-extension://${ chrome.runtime.id }/src/warning/index.html?url=${ res.url }&resFlag=${ res.resFlag }&time=${ res.time }&ga=${ res.ga }&copied=${ res.copied }&script=${ res.script }&extLink=${ res.extLink }&noTitle=${ res.noTitle }&samePageLink=${ res.samePageLink }&iframe=${ res.iframe }&tagCountInHead=${ res.tagCountInHead }&noDomainInInternalLink=${ res.noDomainInInternalLink }&invalidKiyaku=${ res.invalidKiyaku }&ipAddressInLink=${ res.ipAddressInLink }`
+    );
+  }
+}
+
+
+const _checkCopied = async () => {
+  const HtmlAttr: string = "data-scrapbook-source";
+  const HtmlComments: string = "saved from url";
+
+  if (document.documentElement.hasAttribute(HtmlAttr) || document.documentElement.outerHTML.includes(HtmlComments)) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 
@@ -174,15 +216,11 @@ const _checkGoogleAnalytics = async () => {
 
   const srcText = document.documentElement.outerHTML;
 
-  return (srcText.includes(GAFileName)) || (srcText.includes(GTMFileName));
-}
-
-
-const _checkCopied = async () => {
-  const HtmlAttr: string = "data-scrapbook-source";
-  const HtmlComments: string = "saved from url";
-
-  return (document.documentElement.hasAttribute(HtmlAttr)) || (document.documentElement.outerHTML.includes(HtmlComments));
+  if (srcText.includes(GAFileName) || srcText.includes(GTMFileName)) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 
@@ -242,10 +280,10 @@ const _checkExtLink = async () => {
       // cookieが設定されていればeTLD+1が同じ
       if (document.cookie.includes("pd_test_key=pd_test_value")) {
         internal++;
-        console.log(`internal : ${ link }`);
+        // console.log(`internal : ${ link }`);
       } else {
         external++;
-        console.log(`external : ${ link }`);
+        // console.log(`external : ${ link }`);
       }
 
       // cookieを消す
@@ -260,7 +298,134 @@ const _checkExtLink = async () => {
     }
   }
 
-  return (external * 100 / (external + internal));
+  if (external + internal > 0) {
+    return external * 100 / (external + internal);
+  } else {
+    return 0;
+  }
+}
+
+
+const _checkNoTitle = async () => {
+  let title_tag = document.querySelector("title");
+
+  if (title_tag === null || title_tag.text === "") {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+
+const _checkSamePageLinkCount = async () => {
+  const invalidHrefs = ["", "#", "#nothing", "#null", "#void", "#doesnotexist", "#whatever"];
+
+  const hrefs = [...document.querySelectorAll("a[href]")].map(e => e.getAttribute("href")!);
+  const href_dict: { [hrefs: string]: number } = {};
+
+  for (const href in hrefs) {
+    if (invalidHrefs.includes(href.toLowerCase()) || href.toLowerCase().startsWith("javascript")) {
+      continue;
+    }
+    href_dict[href] = (href_dict[href] || 0) + 1;
+  }
+
+  let max = 0;
+  for (const href of hrefs) {
+    if (max < href_dict[href]) max = href_dict[href];
+  }
+  return max;
+}
+
+
+const _checkIframeTagCount = async () => {
+  return document.querySelectorAll("iframe").length;
+}
+
+
+const _checkCountInHeadTag = async () => {
+  return document.querySelector("head")!.childElementCount;
+}
+
+
+const _checkNoDomainInInternalLink = async () => {
+  const hrefs = [...document.querySelectorAll("*[href]")].map(e => e.getAttribute("href")!);
+  const srcs = [...document.querySelectorAll("*[src]")].map(e => e.getAttribute("src")!);
+  const links = [...hrefs, ...srcs];
+
+  let internal = 0;
+  let internal_rel = 0;
+
+  // aタグを外部リンクと内部リンクに分類
+  for (let link of links) {
+    if (link.startsWith("http") || link.startsWith("//")) {
+      // //から始まるURLにhttpやhttpsを追加
+      if (link.startsWith("//")) link = `${ location.protocol }${ link }`;
+      let linkHostname = (new URL(link)).hostname;
+
+      // linkのドメインでcookieを設定
+      // eTLD+1が違うと設定されない
+      while (true) {
+        document.cookie = `pd_test_key=pd_test_value; domain=${ linkHostname };`;
+        if (linkHostname.indexOf(".") === -1) break;
+        linkHostname = linkHostname.substring(linkHostname.indexOf(".") + 1);
+      }
+
+      // cookieが設定されていればeTLD+1が同じ
+      if (document.cookie.includes("pd_test_key=pd_test_value")) {
+        internal++;
+      }
+
+      // cookieを消す
+      linkHostname = (new URL(link)).hostname;
+      while (true) {
+        document.cookie = `pd_test_key=pd_test_value; domain=${ linkHostname }; max-age=0;`;
+        if (linkHostname.indexOf(".") === -1) break;
+        linkHostname = linkHostname.substring(linkHostname.indexOf(".") + 1);
+      }
+    } else {
+      internal++;
+      internal_rel++;
+    }
+  }
+
+  if (internal > 0) {
+    return internal_rel / internal;
+  } else {
+    return 0;
+  }
+}
+
+
+const _checkInvalidKiyaku = async () => {
+  const kiyakuTags = [...document.querySelectorAll<HTMLAnchorElement>("a")]
+    .filter(e => e.text.includes("規約") || e.text.includes("プライバシーポリシー"));
+
+  const kiyakuValid = kiyakuTags
+    .filter(e => e.hasAttribute("href"))
+    .filter(e => !e.getAttribute("href")!.startsWith("#"));
+
+  if (kiyakuTags.length === kiyakuValid.length) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+
+const _checkIpAddressInLink = async () => {
+  const ipAddrRegex = /^.*((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).*$/g;
+
+  const hrefs = [...document.querySelectorAll("*[href]")].map(e => e.getAttribute("href")!);
+  const srcs = [...document.querySelectorAll("*[src]")].map(e => e.getAttribute("src")!);
+  const links = [...hrefs, ...srcs];
+  const matchLink = links.map(link => ipAddrRegex.test(link));
+
+  if (matchLink.length > 0) {
+    return 1;
+  } else {
+    return 0;
+  }
 }
 
 
@@ -274,7 +439,7 @@ const mutationObserver = () => {
         if (node.nodeName.toLowerCase() === "input" && (node as HTMLInputElement).type === "password") {
           main(true).then(async (res) => {
             if (res.resFlag === "Phish") {
-              await _showDetectionPage(res.resFlag, res.detectBy, res.ga, res.copied, res.script, res.extLink, res.time);
+              await _showDetectionPage(res);
             }
           });
         }
@@ -288,9 +453,9 @@ const mutationObserver = () => {
 mutationObserver();
 
 
-main(false).then(async (res) => {
+main(true).then(async (res) => {
   // 検出済みflagが立っていたら警告ページを表示
   if (res.resFlag === "Phish") {
-    await _showDetectionPage(res.resFlag, res.detectBy, res.ga, res.copied, res.script, res.extLink, res.time);
+    await _showDetectionPage(res);
   }
-}).catch(e => console.error(e));
+}).catch(e => console.info(e));

@@ -27,3 +27,8 @@ dist-ssr
 venv
 test/tmp
 test/result.csv
+model/model_env
+
+# model
+tf_model
+tfjs_model
