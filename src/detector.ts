@@ -43,7 +43,7 @@ declare global {
 }
 
 
-const main = async (noSleep: boolean) => {  
+const main = async (noSleep: boolean) => {
   // BlockリストとAllowリストによる判定
   const useBlockList = await getUseBlockList();
   const useAllowList = await getUseAllowList();
@@ -115,7 +115,7 @@ const main = async (noSleep: boolean) => {
 
   if (resFlag !== "NoPasswordForm") {
     console.log("PhishDetector : Start Detection");
-    
+
     const features = {
       "copied": copied,
       "googleAnalytics": ga,
@@ -130,17 +130,17 @@ const main = async (noSleep: boolean) => {
       "ipAddressInLink": ipAddressInLink,
     };
     console.log(features);
-    
+
     // 検出処理
     const result = await chrome.runtime.sendMessage({
       "type": "predict",
       ...features,
     });
 
-    console.log(`PhishDetector : Result : ${result}`);
-    
+    console.log(`PhishDetector : Result : ${ result }`);
+
     console.log("PhishDetector : Finish Detection");
-    
+
     if (result >= 0.5) {
       resFlag = "Phish";
     } else {
@@ -188,28 +188,11 @@ const _isExistPasswordForm = async () => {
 const _showDetectionPage = async (res: RetObj) => {
   if (res.detectBy === "List") {
     location.assign(
-      `chrome-extension://${ chrome.runtime.id }/src/warning/index.html
-      ?url=${ res.url }
-      &resFlag=${ res.resFlag }
-      &time=${ res.time }`
+      `chrome-extension://${ chrome.runtime.id }/src/warning/index.html?url=${ res.url }&resFlag=${ res.resFlag }&time=${ res.time }`
     );
   } else if (res.detectBy === "RealTime") {
     location.assign(
-      `chrome-extension://${ chrome.runtime.id }/src/warning/index.html
-      ?url=${ res.url }
-      &resFlag=${ res.resFlag }
-      &time=${ res.time }
-      &ga=${ res.ga }
-      &copied=${ res.copied }
-      &script=${ res.script }
-      &extLink=${ res.extLink }
-      &noTitle=${ res.noTitle }
-      &samePageLink=${ res.samePageLink }
-      &iframe=${ res.iframe }
-      &tagCountInHead=${ res.tagCountInHead }
-      &noDomainInInternalLink=${ res.noDomainInInternalLink }
-      &invalidKiyaku=${ res.invalidKiyaku }
-      &ipAddressInLink=${ res.ipAddressInLink }`
+      `chrome-extension://${ chrome.runtime.id }/src/warning/index.html?url=${ res.url }&resFlag=${ res.resFlag }&time=${ res.time }&ga=${ res.ga }&copied=${ res.copied }&script=${ res.script }&extLink=${ res.extLink }&noTitle=${ res.noTitle }&samePageLink=${ res.samePageLink }&iframe=${ res.iframe }&tagCountInHead=${ res.tagCountInHead }&noDomainInInternalLink=${ res.noDomainInInternalLink }&invalidKiyaku=${ res.invalidKiyaku }&ipAddressInLink=${ res.ipAddressInLink }`
     );
   }
 }
