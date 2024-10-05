@@ -143,7 +143,6 @@ const main = async (noSleep: boolean) => {
     
     if (result >= 0.5) {
       resFlag = "Phish";
-      resFlag = "Safe";
     } else {
       resFlag = "Safe";
     }
