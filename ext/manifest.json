@@ -26,6 +26,10 @@
       ]
     }
   ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';",
+    "sandbox": "sandbox allow-scripts allow-forms allow-popups allow-modals; script-src 'self' 'unsafe-inline' 'unsafe-eval'; child-src 'self';"
+  },
   "icons": {
     "16": "icon/icon16.png",
     "48": "icon/icon48.png",
@@ -36,7 +40,12 @@
       "resources": [
         "src/warning/index.html",
         "src/detector.js",
-        "assets/utils.js"
+        "assets/utils.js",
+        "assets/_commonjsHelpers.js",
+        "tfjs_model/assets.zip",
+        "tfjs_model/group1-shard1of1.bin",
+        "tfjs_model/model.json",
+        "inference.wasm"
       ],
       "matches": [
         "<all_urls>"

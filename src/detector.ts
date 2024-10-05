@@ -1,5 +1,6 @@
 import { getList, getUseAllowList, getUseBlockList, ListType } from "./utils/utils.ts";
 
+
 chrome.runtime.onMessage.addListener((msg, _, sendResponse) => {
   switch (msg.type) {
     case "detection":
@@ -42,7 +43,7 @@ declare global {
 }
 
 
-const main = async (noSleep: boolean) => {
+const main = async (noSleep: boolean) => {  
   // BlockリストとAllowリストによる判定
   const useBlockList = await getUseBlockList();
   const useAllowList = await getUseAllowList();
@@ -87,13 +88,14 @@ const main = async (noSleep: boolean) => {
   // 時間計測開始
   const startTime: number = performance.now() / 1000;
   // 検出されたか判定するフラグ
-  let resFlag: ResFlag = "NoPasswordForm";
+  let resFlag: ResFlag = "Safe";
 
   // JSによるコンテンツ生成まで2秒待機
   if (!noSleep) await sleep(2000);
 
   // ページ内にpasswordの入力フォームがなければ処理終了
   if (!(await _isExistPasswordForm())) {
+    resFlag = "NoPasswordForm";
     console.log("PhishDetector:NoPasswordForm");
   }
 
@@ -112,9 +114,36 @@ const main = async (noSleep: boolean) => {
   const ipAddressInLink: number = await _checkIpAddressInLink();
 
   if (resFlag !== "NoPasswordForm") {
+    console.log("PhishDetector : Start Detection");
+    
+    const features = {
+      "copied": copied,
+      "googleAnalytics": ga,
+      "scriptTagCount": script,
+      "externalLinkPercentage": extLink,
+      "noTitle": noTitle,
+      "samePageLink": samePageLink,
+      "iframeTagCount": iframe,
+      "tagCountInHeadTag": tagCountInHead,
+      "noDomainInInternalLink": noDomainInInternalLink,
+      "invalidKiyaku": invalidKiyaku,
+      "ipAddressInLink": ipAddressInLink,
+    };
+    console.log(features);
+    
     // 検出処理
-    if (true) {
+    const result = await chrome.runtime.sendMessage({
+      "type": "predict",
+      ...features,
+    });
+
+    console.log(`PhishDetector : Result : ${result}`);
+    
+    console.log("PhishDetector : Finish Detection");
+    
+    if (result >= 0.5) {
       resFlag = "Phish";
+      resFlag = "Safe";
     } else {
       resFlag = "Safe";
     }
@@ -269,10 +298,10 @@ const _checkExtLink = async () => {
       // cookieが設定されていればeTLD+1が同じ
       if (document.cookie.includes("pd_test_key=pd_test_value")) {
         internal++;
-        console.log(`internal : ${ link }`);
+        // console.log(`internal : ${ link }`);
       } else {
         external++;
-        console.log(`external : ${ link }`);
+        // console.log(`external : ${ link }`);
       }
 
       // cookieを消す
@@ -287,7 +316,7 @@ const _checkExtLink = async () => {
     }
   }
 
-  if (external + internal >= 0) {
+  if (external + internal > 0) {
     return external * 100 / (external + internal);
   } else {
     return 0;
@@ -309,7 +338,7 @@ const _checkNoTitle = async () => {
 const _checkSamePageLinkCount = async () => {
   const invalidHrefs = ["", "#", "#nothing", "#null", "#void", "#doesnotexist", "#whatever"];
 
-  const hrefs = [...document.querySelectorAll<HTMLAnchorElement>("a[href]")].map(e => e.href);
+  const hrefs = [...document.querySelectorAll("a[href]")].map(e => e.getAttribute("href")!);
   const href_dict: { [hrefs: string]: number } = {};
 
   for (const href in hrefs) {
@@ -319,7 +348,7 @@ const _checkSamePageLinkCount = async () => {
     href_dict[href] = (href_dict[href] || 0) + 1;
   }
 
-  let max = -1;
+  let max = 0;
   for (const href of hrefs) {
     if (max < href_dict[href]) max = href_dict[href];
   }
@@ -338,7 +367,7 @@ const _checkCountInHeadTag = async () => {
 
 
 const _checkNoDomainInInternalLink = async () => {
-  const hrefs = [...document.querySelectorAll<HTMLAnchorElement>("*[href]")].map(e => e.href);
+  const hrefs = [...document.querySelectorAll("*[href]")].map(e => e.getAttribute("href")!);
   const srcs = [...document.querySelectorAll("*[src]")].map(e => e.getAttribute("src")!);
   const links = [...hrefs, ...srcs];
 
@@ -378,7 +407,7 @@ const _checkNoDomainInInternalLink = async () => {
     }
   }
 
-  if (internal >= 0) {
+  if (internal > 0) {
     return internal_rel / internal;
   } else {
     return 0;
@@ -392,7 +421,7 @@ const _checkInvalidKiyaku = async () => {
 
   const kiyakuValid = kiyakuTags
     .filter(e => e.hasAttribute("href"))
-    .filter(e => !e.href.startsWith("#"));
+    .filter(e => !e.getAttribute("href")!.startsWith("#"));
 
   if (kiyakuTags.length === kiyakuValid.length) {
     return 1;
@@ -405,7 +434,7 @@ const _checkInvalidKiyaku = async () => {
 const _checkIpAddressInLink = async () => {
   const ipAddrRegex = /^.*((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9]).*$/g;
 
-  const hrefs = [...document.querySelectorAll<HTMLAnchorElement>("*[href]")].map(e => e.href);
+  const hrefs = [...document.querySelectorAll("*[href]")].map(e => e.getAttribute("href")!);
   const srcs = [...document.querySelectorAll("*[src]")].map(e => e.getAttribute("src")!);
   const links = [...hrefs, ...srcs];
   const matchLink = links.map(link => ipAddrRegex.test(link));
@@ -447,4 +476,4 @@ main(true).then(async (res) => {
   if (res.resFlag === "Phish") {
     await _showDetectionPage(res);
   }
-}).catch(e => console.error(e));
+}).catch(e => console.info(e));
