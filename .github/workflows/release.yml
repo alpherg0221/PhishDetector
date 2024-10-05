@@ -19,6 +19,8 @@ jobs:
       run: |
         cd ext
         zip -r release.zip *
+        cd ../ext-firefox
+        zip -r release.zip *
 
     - name: Create release
       id: create_release
@@ -40,4 +42,15 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./ext/release.zip
         asset_name: ext.zip
+        asset_content_type: application/zip
+
+    - name: Upload Release Asset
+      id: upload-release-asset-firefox
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./ext-firefox/release.zip
+        asset_name: ext-firefox.zip
         asset_content_type: application/zip
