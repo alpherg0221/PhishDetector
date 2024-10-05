@@ -3,7 +3,7 @@
   "name": "PhishDetector",
   "short_name": "PhishDetector",
   "description": "Phish Detector for Chrome Extension",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "permissions": [
     "tabs",
     "storage",
