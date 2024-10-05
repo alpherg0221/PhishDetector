@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "PhishDetector",
+  "short_name": "PhishDetector",
+  "description": "Phish Detector for Chrome Extension",
+  "version": "2.0.1",
+  "permissions": [
+    "tabs",
+    "storage",
+    "alarms"
+  ],
+  "background": {
+    "scripts": ["src/background.js"],
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "src/popup/index.html"
+  },
+  "content_scripts": [
+    {
+      "js": [
+        "src/loader.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';",
+    "sandbox": "sandbox allow-scripts allow-forms allow-popups allow-modals; script-src 'self' 'unsafe-inline' 'unsafe-eval'; child-src 'self';"
+  },
+  "icons": {
+    "16": "icon/icon16.png",
+    "48": "icon/icon48.png",
+    "128": "icon/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/warning/index.html",
+        "src/detector.js",
+        "assets/utils.js",
+        "assets/_commonjsHelpers.js",
+        "tfjs_model/assets.zip",
+        "tfjs_model/group1-shard1of1.bin",
+        "tfjs_model/model.json",
+        "inference.wasm"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}
