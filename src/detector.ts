@@ -94,7 +94,7 @@ const main = async (noSleep: boolean) => {
   if (!noSleep) await sleep(2000);
 
   // ページ内にpasswordの入力フォームがなければ処理終了
-  if (!(await _isExistPasswordForm())) {
+  if (!(await _existForm())) {
     resFlag = "NoPasswordForm";
     console.log("PhishDetector:NoPasswordForm");
   }
@@ -168,20 +168,22 @@ const main = async (noSleep: boolean) => {
 }
 
 
-const _isExistPasswordForm = async () => {
-  let cnt = document.querySelectorAll('input[type="password"]').length;
+const _existForm = async () => {
+  let passwdFormCnt = document.querySelectorAll('input[type="password"]').length;
+  let textFormCnt = document.querySelectorAll('input[type="text"]').length;
 
   // iframe内のscriptタグも取得
   const iframes = document.querySelectorAll("iframe");
   for (const iframe of iframes) {
     try {
-      cnt += iframe.contentWindow!.document.querySelectorAll('input[type="password"]').length;
+      passwdFormCnt += iframe.contentWindow!.document.querySelectorAll('input[type="password"]').length;
+      textFormCnt += iframe.contentWindow!.document.querySelectorAll('input[type="text"]').length;
     } catch {
       /* empty */
     }
   }
 
-  return (cnt >= 1);
+  return (passwdFormCnt >= 1 || textFormCnt >= 5);
 }
 
 
@@ -436,7 +438,7 @@ const mutationObserver = () => {
   const observer = new MutationObserver((mutations) => {
     mutations.forEach(mutation => {
       mutation.addedNodes.forEach(node => {
-        if (node.nodeName.toLowerCase() === "input" && (node as HTMLInputElement).type === "password") {
+        if (node.nodeName.toLowerCase() === "input") {
           main(true).then(async (res) => {
             if (res.resFlag === "Phish") {
               await _showDetectionPage(res);
@@ -453,9 +455,15 @@ const mutationObserver = () => {
 mutationObserver();
 
 
-main(true).then(async (res) => {
-  // 検出済みflagが立っていたら警告ページを表示
-  if (res.resFlag === "Phish") {
-    await _showDetectionPage(res);
-  }
-}).catch(e => console.info(e));
+let counter = 0;
+const detection10 = setInterval(async () => {
+  main(true).then(async (res) => {
+    // 検出済みflagが立っていたら警告ページを表示
+    if (res.resFlag === "Phish") {
+      await _showDetectionPage(res);
+    }
+  }).catch(e => console.info(e));
+  counter++;
+  
+  if (counter === 10) clearInterval(detection10);
+}, 1000)
