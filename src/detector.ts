@@ -455,11 +455,16 @@ const mutationObserver = () => {
 mutationObserver();
 
 
-setInterval(async () => {
+const exec = setInterval(async () => {
   main(true).then(async (res) => {
     // 検出済みflagが立っていたら警告ページを表示
-    if (res.resFlag === "Phish") {
-      await _showDetectionPage(res);
+    switch (res.resFlag) {
+      case "Phish":
+        await _showDetectionPage(res);
+        break;
+      case "_Phish":
+        clearInterval(exec);
+        break;
     }
   }).catch(e => console.info(e));
 }, 1000)
