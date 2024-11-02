@@ -2,8 +2,6 @@ import logging
 import os
 from pprint import pprint
 
-from tf_keras import metrics
-
 # 余計なログを消す設定
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
@@ -26,8 +24,8 @@ def main():
 
     # モデルの構築
     tuner = tfdf.tuner.RandomSearch(num_trials=100, use_predefined_hps=True)
-    model = tfdf.keras.RandomForestModel(tuner=tuner)
-    # model = tfdf.keras.RandomForestModel()
+    # model = tfdf.keras.RandomForestModel(tuner=tuner)
+    model = tfdf.keras.RandomForestModel()
 
     # 特徴量データの形式をtfdf用に変換
     tf_features = tfdf.keras.pd_dataframe_to_tf_dataset(features_and_label, label="label")
@@ -36,8 +34,8 @@ def main():
     model.fit(tf_features)
 
     # 重要な特徴量の表示
-    model.summary()
-    model.make_inspector().evaluation()
+    pprint(model.make_inspector().variable_importances())
+    # model.make_inspector().evaluation()
 
     # モデルの保存
     tf.saved_model.save(model, "./tf_model")
