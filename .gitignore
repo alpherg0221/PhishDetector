@@ -32,3 +32,4 @@ model/model_env
 # model
 model/tf_model
 model/tfjs_model
+model/lightgbm.onnx
