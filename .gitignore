@@ -30,6 +30,6 @@ test/result.csv
 model/model_env
 
 # model
-model/tf_model
-model/tfjs_model
+model/rf/tf_model
+model/rf/tfjs_model
 model/lightgbm.onnx
