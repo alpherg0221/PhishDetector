@@ -2,15 +2,12 @@ import logging
 import os
 from pprint import pprint
 
-import numpy as np
-
 # 余計なログを消す設定
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 import pandas as pd
 import tensorflow as tf
 import tensorflow_decision_forests as tfdf
-import tensorflowjs as tfjs
 from tf_keras import metrics
 from pandas import DataFrame
 from sklearn.model_selection import StratifiedKFold
@@ -54,7 +51,7 @@ def print_result(name: str, value: float):
 def main(tuning: bool) -> pd.DataFrame:
     # 特徴量データの読み込み
     print("Loading features...")
-    features_and_label: DataFrame = pd.read_csv("./feature.csv")
+    features_and_label: DataFrame = pd.read_csv("/mnt/c/Users/yuki/IdeaProjects/PhishDetector/model/feature.csv")
     print("Loaded features...!")
 
     # StratifiedKFoldを使用するため、featuresとlabelを分離
@@ -80,7 +77,7 @@ def main(tuning: bool) -> pd.DataFrame:
         # 特徴量データの形式をtfdf用に変換
         features_and_label_train = features_and_label.drop(columns="domain").iloc[train, :]
         features_and_label_test = features_and_label.drop(columns="domain").iloc[test, :]
-        features_and_label_test["label"] = features_and_label_test["label"].astype(float)
+        #features_and_label_test["label"] = features_and_label_test["label"].astype(float)
         tf_features_train = tfdf.keras.pd_dataframe_to_tf_dataset(features_and_label_train, label="label")
         tf_features_test = tfdf.keras.pd_dataframe_to_tf_dataset(features_and_label_test, label="label")
 

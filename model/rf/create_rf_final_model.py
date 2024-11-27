@@ -18,7 +18,7 @@ tf.get_logger().setLevel(logging.ERROR)
 def main():
     # 特徴量データの読み込み
     print("Loading features...")
-    features_and_label: DataFrame = pd.read_csv("./feature.csv").drop(columns="domain")
+    features_and_label: DataFrame = pd.read_csv("../feature.csv").drop(columns="domain")
     features_and_label["label"] = features_and_label["label"]
     print("Loaded features...!")
 
