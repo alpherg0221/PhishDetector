@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "PhishDetector",
   "short_name": "PhishDetector",
-  "description": "Phish Detector for Chrome Extension",
-  "version": "2.1.2",
+  "description": "Phish Detector for Firefox Extension",
+  "version": "2.2.0",
   "permissions": [
     "tabs",
     "storage",
