@@ -16,6 +16,7 @@
     "@tensorflow/tfjs-tfdf": "^0.0.1-alpha.28",
     "@types/chrome": "^0.0.250",
     "@types/node": "^20.9.0",
+    "onnxruntime-web": "^1.20.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "zustand": "^4.5.2"

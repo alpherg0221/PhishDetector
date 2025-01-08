@@ -30,5 +30,6 @@ test/result.csv
 model/model_env
 
 # model
-model/tf_model
-model/tfjs_model
+model/tfdf/tf_model
+model/tfdf/tfjs_model
+model/onnx_model

@@ -17,6 +17,21 @@ type ResFlag = "NoPasswordForm" | "Safe" | "Phish" | "_Phish"
 type DetectBy = "RealTime" | "List";
 
 
+export type Feature = {
+  copied: number,
+  googleAnalytics: number,
+  scriptTagCount: number,
+  externalLinkPercentage: number,
+  noTitle: number,
+  samePageLink: number,
+  iframeTagCount: number,
+  tagCountInHeadTag: number,
+  noDomainInInternalLink: number,
+  invalidKiyaku: number,
+  ipAddressInLink: number,
+}
+
+
 type RetObj = {
   resFlag: ResFlag,
   url: string,
@@ -116,7 +131,7 @@ const main = async (noSleep: boolean) => {
   if (resFlag !== "NoPasswordForm") {
     console.log("PhishDetector : Start Detection");
 
-    const features = {
+    const features: Feature = {
       "copied": copied,
       "googleAnalytics": ga,
       "scriptTagCount": script,
@@ -134,7 +149,7 @@ const main = async (noSleep: boolean) => {
     // 検出処理
     const result = await chrome.runtime.sendMessage({
       "type": "predict",
-      ...features,
+      "features": features,
     });
 
     console.log(`PhishDetector : Result : ${ result }`);

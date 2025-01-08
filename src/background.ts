@@ -1,10 +1,5 @@
-import { deleteList, getList, ListType, updateList } from "./utils/utils.ts";
-// @ts-ignore
-import * as tfdf from "@tensorflow/tfjs-tfdf";
-import { Tensor } from "@tensorflow/tfjs";
-import * as tf from "@tensorflow/tfjs";
-// @ts-ignore
-import { TFDFModel } from "@tensorflow/tfjs-tfdf";
+import {deleteList, getList, ListType, updateList} from "./utils/utils.ts";
+import {InferenceSession, Tensor, TypedTensor} from "onnxruntime-web";
 
 chrome.runtime.onInstalled.addListener(async () => {
   await chrome.tabs.create({ url: `./src/startup/index.html` })
@@ -33,21 +28,21 @@ chrome.runtime.onMessage.addListener((msg, _, sendResponse) => {
         chrome.tabs.create({ url: `./src/list/index.html?listType=${ msg.listType }` }).then();
         return true;
       case "predict":
-        tfdf.setLocateFile(() => chrome.runtime.getURL("inference.wasm"));
-        tfdf.loadTFDFModel(chrome.runtime.getURL("tfjs_model/model.json")).then((model: TFDFModel) => {
-          model.executeAsync({
-            "copied": tf.tensor(msg.copied, [1], 'int32'),
-            "google_analytics": tf.tensor(msg.googleAnalytics, [1], 'int32'),
-            "script_tag_count": tf.tensor(msg.scriptTagCount, [1], 'int32'),
-            "external_link_percentage": tf.tensor(msg.externalLinkPercentage, [1]),
-            "no_title": tf.tensor(msg.noTitle, [1], 'int32'),
-            "same_page_link_count": tf.tensor(msg.samePageLink, [1], 'int32'),
-            "iframe_tag_count": tf.tensor(msg.iframeTagCount, [1], 'int32'),
-            "tag_count_in_head_tag": tf.tensor(msg.tagCountInHeadTag, [1], 'int32'),
-            "no_domain_in_internal_link": tf.tensor(msg.noDomainInInternalLink, [1]),
-            "invalid_kiyaku": tf.tensor(msg.invalidKiyaku, [1], 'int32'),
-            "ip_address_in_link": tf.tensor(msg.ipAddressInLink, [1], 'int32'),
-          }).then((result: Tensor) => sendResponse(result.dataSync()[0]));
+        InferenceSession.create(chrome.runtime.getURL("onnx_model/lightgbm.onnx")).then(async session => {
+          const featuresFloat32: Float32Array = Float32Array.from(Object.values(msg.features));
+          const featuresTensor: TypedTensor<"float32"> = new Tensor(featuresFloat32, [1, 11]);
+
+          const result = await session.run({ X: featuresTensor });
+          const label = Number(result.label.data[0]);
+          const probability = Number(result.probabilities.data[1]);
+
+          if (label === 0) {
+            console.log("Legitimate");
+          } else if (label === 1) {
+            console.log("Phishing");
+          }
+
+          sendResponse(probability);
         });
     }
   });
