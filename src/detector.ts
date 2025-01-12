@@ -505,4 +505,4 @@ const exec = setInterval(async () => {
         break;
     }
   }).catch(e => console.info(e));
-}, 1000)
+}, 500)
