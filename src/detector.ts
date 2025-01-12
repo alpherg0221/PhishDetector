@@ -34,8 +34,10 @@ export type Feature = {
 
 type RetObj = {
   resFlag: ResFlag,
+  classifierRes: ResFlag,
   url: string,
-  time: string,
+  copiedTime: string,
+  classifierTime: string,
   detectBy: DetectBy,
   copied: number,
   ga: number,
@@ -70,8 +72,10 @@ const main = async (noSleep: boolean) => {
   if (useAllowList && allowList.includes(location.hostname)) {
     return <RetObj>{
       resFlag: "Safe",
+      classifierRes: "Safe",
       url: location.hostname,
-      time: "0",
+      copiedTime: "0",
+      classifierTime: "0",
       detectBy: "List",
     }
   }
@@ -79,8 +83,10 @@ const main = async (noSleep: boolean) => {
   if (useBlockList && blockList.includes(location.hostname)) {
     return <RetObj>{
       resFlag: "Phish",
+      classifierRes: "Phish",
       url: location.hostname,
-      time: "0",
+      copiedTime: "0",
+      classifierTime: "0",
       detectBy: "List",
     }
   }
@@ -88,8 +94,10 @@ const main = async (noSleep: boolean) => {
   if (tmpList.includes(location.hostname)) {
     return <RetObj>{
       resFlag: "_Phish",
+      classifierRes: "_Phish",
       url: location.hostname,
-      time: "0",
+      copiedTime: "0",
+      classifierTime: "0",
       detectBy: "List",
     }
   }
@@ -99,9 +107,11 @@ const main = async (noSleep: boolean) => {
   // Element.prototype.attachShadow = () => this._attachShadow({ mode: "open" });
 
   // 時間を表示する桁数
-  const digits: number = 3
+  const digits: number = 6
   // 時間計測開始
   const startTime: number = performance.now() / 1000;
+  // 分類器の検出結果
+  let classifierResFlag: ResFlag = "Safe";
   // 検出されたか判定するフラグ
   let resFlag: ResFlag = "Safe";
 
@@ -117,6 +127,10 @@ const main = async (noSleep: boolean) => {
 
   // 各指標の値
   const copied: number = await _checkCopied();
+
+  // コピーの痕跡の検出時間
+  const copiedTime = (performance.now() / 1000 - startTime).toFixed(digits);
+
   const ga: number = await _checkGoogleAnalytics();
   const script: number = await _checkScriptTagCount();
   const extLink: number = await _checkExtLink();
@@ -157,6 +171,12 @@ const main = async (noSleep: boolean) => {
     console.log("PhishDetector : Finish Detection");
 
     if (result >= 0.5) {
+      classifierResFlag = "Phish";
+    } else {
+      classifierResFlag = "Safe";
+    }
+
+    if (copied || classifierResFlag == "Phish") {
       resFlag = "Phish";
     } else {
       resFlag = "Safe";
@@ -165,8 +185,10 @@ const main = async (noSleep: boolean) => {
 
   return <RetObj>{
     resFlag: resFlag,
+    classifierRes: classifierResFlag,
     url: location.hostname,
-    time: (performance.now() / 1000 - startTime).toFixed(digits),
+    copiedTime: copiedTime,
+    classifierTime: (performance.now() / 1000 - startTime).toFixed(digits),
     detectBy: "RealTime",
     copied: copied,
     ga: ga,
@@ -205,11 +227,11 @@ const _existForm = async () => {
 const _showDetectionPage = async (res: RetObj) => {
   if (res.detectBy === "List") {
     location.assign(
-      `${chrome.runtime.getURL("src/warning/index.html")}?url=${ res.url }&resFlag=${ res.resFlag }&time=${ res.time }`
+      `${chrome.runtime.getURL("src/warning/index.html")}?url=${ res.url }&resFlag=${ res.resFlag }&time=${ res.classifierTime }`
     );
   } else if (res.detectBy === "RealTime") {
     location.assign(
-      `${chrome.runtime.getURL("src/warning/index.html")}?url=${ res.url }&resFlag=${ res.resFlag }&time=${ res.time }&ga=${ res.ga }&copied=${ res.copied }&script=${ res.script }&extLink=${ res.extLink }&noTitle=${ res.noTitle }&samePageLink=${ res.samePageLink }&iframe=${ res.iframe }&tagCountInHead=${ res.tagCountInHead }&noDomainInInternalLink=${ res.noDomainInInternalLink }&invalidKiyaku=${ res.invalidKiyaku }&ipAddressInLink=${ res.ipAddressInLink }`
+      `${chrome.runtime.getURL("src/warning/index.html")}?url=${ res.url }&resFlag=${ res.resFlag }&classifierRes=${ res.classifierRes }&classifierTime=${ res.classifierTime }&copiedTime=${ res.copiedTime }&ga=${ res.ga }&copied=${ res.copied }&script=${ res.script }&extLink=${ res.extLink }&noTitle=${ res.noTitle }&samePageLink=${ res.samePageLink }&iframe=${ res.iframe }&tagCountInHead=${ res.tagCountInHead }&noDomainInInternalLink=${ res.noDomainInInternalLink }&invalidKiyaku=${ res.invalidKiyaku }&ipAddressInLink=${ res.ipAddressInLink }`
     );
   }
 }
@@ -218,8 +240,9 @@ const _showDetectionPage = async (res: RetObj) => {
 const _checkCopied = async () => {
   const HtmlAttr: string = "data-scrapbook-source";
   const HtmlComments: string = "saved from url";
+  const HtmlComments2: string = "Page Saved with SingleFile"
 
-  if (document.documentElement.hasAttribute(HtmlAttr) || document.documentElement.outerHTML.includes(HtmlComments)) {
+  if (document.documentElement.hasAttribute(HtmlAttr) || document.documentElement.outerHTML.includes(HtmlComments) || document.documentElement.outerHTML.includes(HtmlComments2)) {
     return 1;
   } else {
     return 0;

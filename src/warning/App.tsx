@@ -95,7 +95,7 @@ const App = () => {
           {/*  検出理由：<b>{ (new URL(location.href)).searchParams.get("by") }</b>*/ }
           {/*</Text>*/ }
           <Text style={ { color: "#e9e9e9", fontSize: "1.25em" } }>
-            検出時間：<b>{ (new URL(location.href)).searchParams.get("time") }</b> ms
+            検出時間：<b>{ (new URL(location.href)).searchParams.get("classifierTime") }</b> ms
           </Text>
           <Stack horizontal horizontalAlign="center" style={ { paddingTop: 20 } } tokens={ { childrenGap: 20 } }>
             <DefaultButton onClick={ reportFP }>

@@ -7,7 +7,7 @@ export const reportToFirenze: (
   formData.append("type", _type);
   Object.keys(data).forEach(key => formData.append(key, data[key]));
 
-  await fetch("https://www.az.lab.uec.ac.jp/~ywatanabe/PhishingDetector/api/v2/info.php", {
+  await fetch("https://www.az.lab.uec.ac.jp/~ywatanabe/PhishingDetector/api/v3/info.php", {
     mode: "cors",
     method: "POST",
     body: formData,
