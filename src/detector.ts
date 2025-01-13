@@ -121,7 +121,6 @@ const main = async (noSleep: boolean) => {
   // ページ内にpasswordの入力フォームがなければ処理終了
   if (!(await _existForm())) {
     resFlag = "NoPasswordForm";
-    console.log("PhishDetector:NoPasswordForm");
   }
 
 
@@ -143,8 +142,6 @@ const main = async (noSleep: boolean) => {
   const ipAddressInLink: number = await _checkIpAddressInLink();
 
   if (resFlag !== "NoPasswordForm") {
-    console.log("PhishDetector : Start Detection");
-
     const features: Feature = {
       "copied": copied,
       "googleAnalytics": ga,
@@ -158,17 +155,12 @@ const main = async (noSleep: boolean) => {
       "invalidKiyaku": invalidKiyaku,
       "ipAddressInLink": ipAddressInLink,
     };
-    console.log(features);
 
     // 検出処理
     const result = await chrome.runtime.sendMessage({
       "type": "predict",
       "features": features,
     });
-
-    console.log(`PhishDetector : Result : ${ result }`);
-
-    console.log("PhishDetector : Finish Detection");
 
     if (result >= 0.5) {
       classifierResFlag = "Phish";
@@ -226,13 +218,13 @@ const _existForm = async () => {
 
 const _showDetectionPage = async (res: RetObj) => {
   if (res.detectBy === "List") {
-    location.assign(
-      `${chrome.runtime.getURL("src/warning/index.html")}?url=${ res.url }&resFlag=${ res.resFlag }&time=${ res.classifierTime }`
-    );
+    // location.assign(
+    //   `${chrome.runtime.getURL("src/warning/index.html")}?url=${ res.url }&resFlag=${ res.resFlag }&time=${ res.classifierTime }`
+    // );
   } else if (res.detectBy === "RealTime") {
-    location.assign(
-      `${chrome.runtime.getURL("src/warning/index.html")}?url=${ res.url }&resFlag=${ res.resFlag }&classifierRes=${ res.classifierRes }&classifierTime=${ res.classifierTime }&copiedTime=${ res.copiedTime }&ga=${ res.ga }&copied=${ res.copied }&script=${ res.script }&extLink=${ res.extLink }&noTitle=${ res.noTitle }&samePageLink=${ res.samePageLink }&iframe=${ res.iframe }&tagCountInHead=${ res.tagCountInHead }&noDomainInInternalLink=${ res.noDomainInInternalLink }&invalidKiyaku=${ res.invalidKiyaku }&ipAddressInLink=${ res.ipAddressInLink }`
-    );
+    // location.assign(
+    //   `${chrome.runtime.getURL("src/warning/index.html")}?url=${ res.url }&resFlag=${ res.resFlag }&classifierRes=${ res.classifierRes }&classifierTime=${ res.classifierTime }&copiedTime=${ res.copiedTime }&ga=${ res.ga }&copied=${ res.copied }&script=${ res.script }&extLink=${ res.extLink }&noTitle=${ res.noTitle }&samePageLink=${ res.samePageLink }&iframe=${ res.iframe }&tagCountInHead=${ res.tagCountInHead }&noDomainInInternalLink=${ res.noDomainInInternalLink }&invalidKiyaku=${ res.invalidKiyaku }&ipAddressInLink=${ res.ipAddressInLink }`
+    // );
   }
 }
 
@@ -320,10 +312,8 @@ const _checkExtLink = async () => {
       // cookieが設定されていればeTLD+1が同じ
       if (document.cookie.includes("pd_test_key=pd_test_value")) {
         internal++;
-        // console.log(`internal : ${ link }`);
       } else {
         external++;
-        // console.log(`external : ${ link }`);
       }
 
       // cookieを消す
