@@ -218,13 +218,13 @@ const _existForm = async () => {
 
 const _showDetectionPage = async (res: RetObj) => {
   if (res.detectBy === "List") {
-    // location.assign(
-    //   `${chrome.runtime.getURL("src/warning/index.html")}?url=${ res.url }&resFlag=${ res.resFlag }&time=${ res.classifierTime }`
-    // );
+    location.assign(
+      `${chrome.runtime.getURL("src/warning/index.html")}?url=${ res.url }&resFlag=${ res.resFlag }&time=${ res.classifierTime }`
+    );
   } else if (res.detectBy === "RealTime") {
-    // location.assign(
-    //   `${chrome.runtime.getURL("src/warning/index.html")}?url=${ res.url }&resFlag=${ res.resFlag }&classifierRes=${ res.classifierRes }&classifierTime=${ res.classifierTime }&copiedTime=${ res.copiedTime }&ga=${ res.ga }&copied=${ res.copied }&script=${ res.script }&extLink=${ res.extLink }&noTitle=${ res.noTitle }&samePageLink=${ res.samePageLink }&iframe=${ res.iframe }&tagCountInHead=${ res.tagCountInHead }&noDomainInInternalLink=${ res.noDomainInInternalLink }&invalidKiyaku=${ res.invalidKiyaku }&ipAddressInLink=${ res.ipAddressInLink }`
-    // );
+    location.assign(
+      `${chrome.runtime.getURL("src/warning/index.html")}?url=${ res.url }&resFlag=${ res.resFlag }&classifierRes=${ res.classifierRes }&classifierTime=${ res.classifierTime }&copiedTime=${ res.copiedTime }&ga=${ res.ga }&copied=${ res.copied }&script=${ res.script }&extLink=${ res.extLink }&noTitle=${ res.noTitle }&samePageLink=${ res.samePageLink }&iframe=${ res.iframe }&tagCountInHead=${ res.tagCountInHead }&noDomainInInternalLink=${ res.noDomainInInternalLink }&invalidKiyaku=${ res.invalidKiyaku }&ipAddressInLink=${ res.ipAddressInLink }`
+    );
   }
 }
 
